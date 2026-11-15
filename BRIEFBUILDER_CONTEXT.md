@@ -64,13 +64,18 @@ Everything else (stratification, HLR assessment, Future Roles, Higher Responsibi
 
 ### Static Close-Out Dates (SCODs) by Grade
 
-| Grade | SCOD |
-|-------|------|
-| AB–SrA (E1–E4) | 31 March |
-| SSgt (E5) | 30 June |
-| TSgt (E6) | 30 September |
-| MSgt–CMSgt (E7–E9) | 31 May |
-*(RegAF; AFR/ANG may differ)*
+Source: AFI 36-2406 (22 Aug 2025), Tables 4.4 and 4.5. Grades include selects.
+
+| Grade | SCOD | RegAF / AGR / Stat Tour | AFR/ANG non-AGR |
+|-------|------|-------------------------|-----------------|
+| SrA and below (E1–E4) | 31 March | Annual | Even years |
+| SSgt (E5) | 31 January | Annual | Odd years |
+| TSgt (E6) | 30 November | Annual | Even years |
+| MSgt (E7) | 30 September | Annual | Odd years |
+| SMSgt (E8) | 31 July | Annual | Even years |
+| CMSgt (E9) | 31 May | Annual | Annual for AFR, odd years for ANG |
+
+The AFI does not state a character count for the four MPA blocks; it says comments are "limited to the space provided". The 350-character figure is the myEval / AF Form 716 field size, not a number from the AFI.
 
 ---
 
@@ -412,7 +417,7 @@ epb bullets, epr bullets, air force epb, epb writer, af evaluation, afsc bullets
 
 ## Key References
 
-- AFI 36-2406 (effective 22 Aug 2025) — governing instruction
+- AFI 36-2406 (22 Aug 2025, with guidance memo AFGM2026-01 dated 7 Aug 2026) — governing instruction
 - AF Form 716 (20240109) — universal EPB offline form
 - ALQ Writing Guide v1 (10 Jan 2023) — official performance statement guide
 - EPB-AI-Workshop slides — AF-produced training on AI for EPB writing

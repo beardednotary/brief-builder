@@ -2,30 +2,46 @@ import { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { AirmanRank } from '../../types';
+import { AirmanRank, Component } from '../../types';
 import { useProfile } from '../../hooks/useProfile';
 import * as storage from '../../services/storage';
 import { Colors, Spacing, FontSize, Radius } from '../../constants/theme';
 
-const RANK_SCOD: Record<AirmanRank, [number, number]> = {
-  AB:    [3, 31],
-  Amn:   [3, 31],
-  A1C:   [3, 31],
-  SrA:   [3, 31],
-  SSgt:  [6, 30],
-  TSgt:  [9, 30],
-  MSgt:  [5, 31],
-  SMSgt: [5, 31],
-  CMSgt: [5, 31],
+// Static close-out dates per AFI 36-2406 (22 Aug 2025), Tables 4.4 and 4.5.
+// [month, day, Guard/Reserve non-AGR cycle]. RegAF closes out every year;
+// Guard/Reserve non-AGR close out every two years on the listed year parity.
+type ArcCycle = 'even' | 'odd';
+const RANK_SCOD: Record<AirmanRank, [number, number, ArcCycle]> = {
+  AB:    [3, 31, 'even'],
+  Amn:   [3, 31, 'even'],
+  A1C:   [3, 31, 'even'],
+  SrA:   [3, 31, 'even'],
+  SSgt:  [1, 31, 'odd'],
+  TSgt:  [11, 30, 'even'],
+  MSgt:  [9, 30, 'odd'],
+  SMSgt: [7, 31, 'even'],
+  CMSgt: [5, 31, 'odd'],
 };
 
-function calcSCOD(rank: AirmanRank): string {
-  const today = new Date();
+function closesOutIn(year: number, rank: AirmanRank, component: Component): boolean {
+  if (component === 'RegAF') return true;
+  // AFR CMSgts close out annually; ANG CMSgts on odd years.
+  if (rank === 'CMSgt' && component === 'AFR') return true;
+  const cycle = RANK_SCOD[rank][2];
+  return cycle === 'even' ? year % 2 === 0 : year % 2 === 1;
+}
+
+function calcSCOD(rank: AirmanRank, component: Component): string {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const [month, day] = RANK_SCOD[rank];
-  const thisYear = new Date(today.getFullYear(), month - 1, day);
-  const year = thisYear > today ? today.getFullYear() : today.getFullYear() + 1;
-  const d = new Date(year, month - 1, day);
-  return d.toISOString().split('T')[0];
+  let year = today.getFullYear();
+  while (!closesOutIn(year, rank, component) || new Date(year, month - 1, day) < today) {
+    year += 1;
+  }
+  const mm = String(month).padStart(2, '0');
+  const dd = String(day).padStart(2, '0');
+  return `${year}-${mm}-${dd}`;
 }
 
 function formatDate(iso: string): string {
@@ -36,8 +52,9 @@ function formatDate(iso: string): string {
 export default function SCODScreen() {
   const router = useRouter();
   const { profile, saveProfile } = useProfile();
-  const rank = profile?.rank ?? 'SrA';
-  const suggestedSCOD = calcSCOD(rank as AirmanRank);
+  const rank: AirmanRank = profile?.rank ?? 'SrA';
+  const component: Component = profile?.component ?? 'RegAF';
+  const suggestedSCOD = calcSCOD(rank, component);
   const [scod, setScod] = useState(suggestedSCOD);
   const [overriding, setOverriding] = useState(false);
   const [overrideText, setOverrideText] = useState('');
@@ -68,8 +85,16 @@ export default function SCODScreen() {
 
       <View style={styles.body}>
         <View style={styles.scodCard}>
-          <Text style={styles.scodLabel}>Based on {rank}, your SCOD is:</Text>
+          <Text style={styles.scodLabel}>
+            Based on {rank} ({component}), your SCOD is:
+          </Text>
           <Text style={styles.scodDate}>{formatDate(scod)}</Text>
+          {component !== 'RegAF' && scod === suggestedSCOD && (
+            <Text style={styles.arcNote}>
+              Guard and Reserve non-AGR Airmen close out every two years. If you are AGR or on a
+              Stat Tour, you follow the active-duty schedule — change the date below.
+            </Text>
+          )}
           {scod !== suggestedSCOD && (
             <Text style={styles.overrideNote}>
               (Manually set — suggested: {formatDate(suggestedSCOD)})
@@ -110,7 +135,7 @@ export default function SCODScreen() {
         >
           <Text style={styles.buttonText}>Start Building →</Text>
         </TouchableOpacity>
-        <Text style={styles.note}>You can change this later in Profile</Text>
+        <Text style={styles.note}>Your dashboard counts down to this date</Text>
       </View>
     </SafeAreaView>
   );
@@ -144,6 +169,13 @@ const styles = StyleSheet.create({
   scodLabel: { fontSize: FontSize.sm, color: Colors.textMuted, marginBottom: Spacing.sm },
   scodDate: { fontSize: FontSize.xl, fontWeight: '700', color: Colors.primary },
   overrideNote: { fontSize: FontSize.xs, color: Colors.warning, marginTop: Spacing.xs },
+  arcNote: {
+    fontSize: FontSize.xs,
+    color: Colors.textMuted,
+    marginTop: Spacing.sm,
+    textAlign: 'center',
+    lineHeight: 17,
+  },
   overrideLink: {
     textAlign: 'center',
     color: Colors.primaryLight,
