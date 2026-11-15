@@ -1,0 +1,3 @@
+# Local development only. Copy this file to .dev.vars (which is gitignored)
+# and paste your key. Production uses: npx wrangler secret put ANTHROPIC_API_KEY
+ANTHROPIC_API_KEY=sk-ant-...

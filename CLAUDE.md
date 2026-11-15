@@ -7,11 +7,11 @@ An iOS/Android app (React Native + Expo) that helps enlisted Air Force members p
 - React Native + Expo (managed workflow)
 - Expo Router (file-based navigation)
 - AsyncStorage / MMKV for local persistence
-- Anthropic Claude API for AI polish (`claude-sonnet-4-20250514`)
+- Anthropic Claude API for AI writing (`claude-sonnet-5-5`), called through the Cloudflare Worker in `proxy/` — the app never holds the key
 - RevenueCat for IAP (monthly $3.99 / annual $14.99 / lifetime $24.99)
 - EAS Build + EAS Submit
 - TypeScript throughout
-- No backend — fully local for MVP
+- No backend beyond the stateless AI proxy — all user data stays local for MVP
 
 ## Developer Preferences
 - **PowerShell-compatible commands** — never use bash-only syntax
@@ -71,9 +71,9 @@ type Component = 'RegAF' | 'AFR' | 'ANG';
 
 ## AI Polish Flow
 1. User selects a log entry
-2. App calls `buildPrompt(entry, profile)` from `constants/prompts.ts`
-3. POST to Anthropic API — model: `claude-sonnet-4-20250514`, max_tokens: 300
-4. Parse 2 statement options from response
+2. App POSTs the entry + profile to the proxy (`services/anthropic.ts` → `EXPO_PUBLIC_PROXY_URL/v1/write`)
+3. Proxy (`proxy/src/index.ts`) validates the input, calls `buildPrompt(entry, profile)` from `constants/prompts.ts`, and calls Claude — model: `claude-sonnet-5-5`, effort low
+4. Proxy parses 2 statement options and returns them
 5. Show options with character counts
 6. User taps to select, can edit inline
 7. Accepted statement saved back to entry + added to MPA block
@@ -106,14 +106,16 @@ improving_the_unit: ['decision_making', 'innovation']
 
 ## Environment Variables
 ```
-ANTHROPIC_API_KEY=          # Claude API key
+EXPO_PUBLIC_PROXY_URL=      # App .env — URL of the deployed Worker (not a secret)
+ANTHROPIC_API_KEY=          # Worker secret only (`npx wrangler secret put`), never in the app's .env
 REVENUECAT_IOS_KEY=         # RevenueCat iOS public key
 REVENUECAT_ANDROID_KEY=     # RevenueCat Android public key
 ```
 
 ## Do Not
 - Eject from Expo managed workflow
-- Add a backend/server for MVP
+- Add any backend/server beyond the AI proxy for MVP
+- Put an Anthropic key in the app or in any `EXPO_PUBLIC_` variable
 - Use bash-only commands (use PowerShell-compatible)
 - Write partial files — always write complete, working files
 - Use `expo install` alternatives — always use `npx expo install` for Expo packages

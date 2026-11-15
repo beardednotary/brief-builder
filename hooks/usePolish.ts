@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
 import { LogEntry, UserProfile } from '../types';
-import { buildPrompt } from '../constants/prompts';
 import { polishEntry } from '../services/anthropic';
 import * as storage from '../services/storage';
 
@@ -21,15 +20,15 @@ export function usePolish(profile: UserProfile | null) {
 
   const polish = useCallback(
     async (entry: LogEntry): Promise<string[]> => {
-      if (!profile) throw new Error('Profile required before polishing.');
+      if (!profile) throw new Error('Profile required before writing statements.');
 
       if (!profile.isPro) {
         const count = await storage.getPolishCount();
         if (count >= FREE_POLISH_LIMIT) throw new PaywallError();
       }
 
-      const payload = buildPrompt(entry, profile);
-      const result = await polishEntry(payload);
+      // The proxy builds the prompt (constants/prompts.ts) and calls Claude.
+      const result = await polishEntry(entry, profile);
 
       await storage.incrementPolishCount();
       return result.statements;

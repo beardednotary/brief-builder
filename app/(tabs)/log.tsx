@@ -24,7 +24,7 @@ const MPA_FILTERS: { key: MPA | 'all'; label: string }[] = [
 
 function statusBadge(status: LogEntry['status']): { label: string; color: string } {
   if (status === 'finalized') return { label: 'Final', color: Colors.success };
-  if (status === 'polished') return { label: 'Polished', color: Colors.primaryLight };
+  if (status === 'polished') return { label: 'Written', color: Colors.primaryLight };
   return { label: 'Draft', color: Colors.textMuted };
 }
 

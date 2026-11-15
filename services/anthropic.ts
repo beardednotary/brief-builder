@@ -1,57 +1,69 @@
-import { PromptPayload } from '../constants/prompts';
+import { LogEntry, UserProfile } from '../types';
 
-// MVP: key is bundled via EXPO_PUBLIC_ANTHROPIC_API_KEY in .env
-// This is acceptable for a local-only app with no backend.
-const API_KEY = process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY ?? '';
-const MODEL = 'claude-sonnet-4-20250514';
-const MAX_TOKENS = 300;
+// The app never holds an Anthropic key. It calls the BriefBuilder proxy
+// (see proxy/), which builds the prompt and calls Claude server-side.
+const PROXY_URL = (process.env.EXPO_PUBLIC_PROXY_URL ?? '').replace(/\/+$/, '');
+const TIMEOUT_MS = 45_000;
 
 export interface PolishResult {
   statements: string[];
-  raw: string;
 }
 
-export async function polishEntry(payload: PromptPayload): Promise<PolishResult> {
-  if (!API_KEY) {
-    throw new Error('ANTHROPIC_API_KEY not set. Add EXPO_PUBLIC_ANTHROPIC_API_KEY to your .env file.');
+export async function polishEntry(entry: LogEntry, profile: UserProfile): Promise<PolishResult> {
+  if (!PROXY_URL) {
+    throw new Error('EXPO_PUBLIC_PROXY_URL is not set. Add it to your .env file and restart Expo.');
   }
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': API_KEY,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: MODEL,
-      max_tokens: MAX_TOKENS,
-      system: payload.system,
-      messages: [{ role: 'user', content: payload.user }],
-    }),
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+  let response: Response;
+  try {
+    response = await fetch(`${PROXY_URL}/v1/write`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        entry: {
+          inputMode: entry.inputMode,
+          rawText: entry.rawText,
+          action: entry.action,
+          outcome: entry.outcome,
+          metrics: entry.metrics,
+          context: entry.context,
+          mpa: entry.mpa,
+          alq: entry.alq,
+          proficiencyTarget: entry.proficiencyTarget,
+        },
+        profile: {
+          rank: profile.rank,
+          afsc: profile.afsc,
+          afscTitle: profile.afscTitle,
+          component: profile.component,
+        },
+      }),
+      signal: controller.signal,
+    });
+  } catch (err) {
+    if (err instanceof Error && err.name === 'AbortError') {
+      throw new Error('The request timed out. Check your connection and try again.');
+    }
+    throw new Error('Could not reach the writing service. Check your connection and try again.');
+  } finally {
+    clearTimeout(timer);
+  }
+
+  const data = (await response.json().catch(() => null)) as
+    | { statements?: string[]; error?: string }
+    | null;
 
   if (!response.ok) {
-    const body = await response.text();
-    throw new Error(`Anthropic API ${response.status}: ${body}`);
+    throw new Error(data?.error ?? `The writing service returned an error (${response.status}).`);
   }
 
-  const data = await response.json();
-  const raw: string = data.content?.[0]?.text ?? '';
-  const statements = parseStatements(raw);
+  const statements = data?.statements ?? [];
+  if (statements.length === 0) {
+    throw new Error('No statements were returned. Try again.');
+  }
 
-  return { statements, raw };
-}
-
-function parseStatements(raw: string): string[] {
-  return raw
-    .split('\n')
-    .filter((line) => /^Option [12]:/i.test(line))
-    .map((line) =>
-      line
-        .replace(/^Option [12]:\s*/i, '')
-        .replace(/\s*\(\d+ chars?\)\s*$/i, '')
-        .trim()
-    )
-    .slice(0, 2);
+  return { statements };
 }
