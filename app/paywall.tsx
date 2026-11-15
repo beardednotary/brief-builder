@@ -14,7 +14,6 @@ const PLANS: { id: ProductId; label: string; price: string; period: string; high
 const BENEFITS = [
   'Unlimited AI statement writing',
   'AFSC-specific context in every prompt',
-  'Push notification reminders',
 ];
 
 export default function Paywall() {
