@@ -23,9 +23,9 @@ interface Env {
 }
 
 const MODEL = 'claude-sonnet-5-5';
-// Thinking counts toward max_tokens on this model, so leave headroom above
-// the ~100 tokens the two statements need.
-const MAX_TOKENS = 1024;
+// Thinking counts toward max_tokens on this model, so leave plenty of headroom
+// above the ~100 tokens the two statements need (1024 cut option 2 off).
+const MAX_TOKENS = 4096;
 
 const MAX_BODY_BYTES = 16_000;
 const MAX_FREEFORM_CHARS = 4000;
@@ -186,6 +186,8 @@ async function writeStatements(request: Request, env: Env): Promise<Response> {
     .map((block) => (block.type === 'text' ? block.text : ''))
     .join('\n');
   const statements = parseStatements(raw);
+  // If the response hit the token cap, the last option is cut off mid-sentence.
+  if (response.stop_reason === 'max_tokens') statements.pop();
   if (statements.length === 0) {
     console.error('No statements parsed', { stop_reason: response.stop_reason });
     return json(502, { error: 'The AI returned an unexpected response. Try again.' });
