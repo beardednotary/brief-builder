@@ -81,7 +81,7 @@ type Component = 'RegAF' | 'AFR' | 'ANG';
 ## Monetization Gate
 - 5 free AI polishes total (tracked in AsyncStorage)
 - On 6th attempt → RevenueCat paywall
-- Pro unlocks: unlimited polishes, AFSC-specific context injection, reminders
+- Pro unlocks: unlimited polishes, AFSC-specific context injection (reminders are free for everyone)
 - Check `usePolish.ts` before every API call
 
 ## ALQ → MPA Mapping

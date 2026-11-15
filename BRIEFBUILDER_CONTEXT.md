@@ -350,9 +350,11 @@ app/
 | Tier | Price | What's Included |
 |------|-------|-----------------|
 | Free | $0 | Unlimited logging, 5 AI polishes/month |
-| Pro Monthly | $3.99/mo | Unlimited AI polishes, export, AFSC context, reminders |
-| Pro Annual | $24.99/yr | Same as monthly |
-| Lifetime | $14.99 | Everything, forever |
+| Pro Monthly | $3.99/mo | Unlimited AI polishes, export, AFSC context |
+| Pro Annual | $14.99/yr | Same as monthly |
+| Lifetime | $24.99 | Everything, forever |
+
+Reminders are free for everyone (decided 2026-11-15).
 
 **Paywall trigger:** Day 7 gate — user hits paywall on their 6th AI polish attempt.
 

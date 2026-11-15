@@ -6,8 +6,8 @@ import { purchasePro, restorePurchases, ProductId } from '../services/revenueCat
 import { Colors, Spacing, FontSize, Radius } from '../constants/theme';
 
 const PLANS: { id: ProductId; label: string; price: string; period: string; highlight?: boolean }[] = [
-  { id: 'briefbuilder_lifetime', label: 'Lifetime', price: '$14.99', period: 'one-time', highlight: true },
-  { id: 'briefbuilder_pro_annual', label: 'Annual', price: '$24.99', period: 'per year (~$2.08/mo)' },
+  { id: 'briefbuilder_lifetime', label: 'Lifetime', price: '$24.99', period: 'one-time', highlight: true },
+  { id: 'briefbuilder_pro_annual', label: 'Annual', price: '$14.99', period: 'per year (~$1.25/mo)' },
   { id: 'briefbuilder_pro_monthly', label: 'Monthly', price: '$3.99', period: 'per month' },
 ];
 
