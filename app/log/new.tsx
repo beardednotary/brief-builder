@@ -10,6 +10,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useLogEntries } from '../../hooks/useLogEntries';
+import { useProfile } from '../../hooks/useProfile';
+import { offerRemindersOnce } from '../../services/notifications';
 import { MPA_DEFINITIONS, MPA_ORDER } from '../../constants/mpa';
 import { ALQ_DEFINITIONS, ALQ_MPA_MAP } from '../../constants/alq';
 import { PROFICIENCY_ORDER, PROFICIENCY_DEFINITIONS } from '../../constants/proficiency';
@@ -19,6 +21,7 @@ import { MPA, ALQ, ProficiencyLevel } from '../../types';
 export default function NewLogEntry() {
   const router = useRouter();
   const { addEntry } = useLogEntries();
+  const { profile } = useProfile();
   const { mpa: mpaParam, autoWrite } = useLocalSearchParams<{ mpa?: string; autoWrite?: string }>();
 
   const [mode, setMode] = useState<'freeform' | 'structured'>('freeform');
@@ -54,6 +57,8 @@ export default function NewLogEntry() {
       router.replace(`/polish/${entry.id}`);
     } else {
       router.back();
+      // A saved entry is the moment reminders make sense. Offered only once.
+      offerRemindersOnce({ lastEntryAt: entry.createdAt, scod: profile?.reportingPeriodEnd });
     }
   };
 

@@ -135,7 +135,7 @@ export default function SCODScreen() {
         >
           <Text style={styles.buttonText}>Start Building →</Text>
         </TouchableOpacity>
-        <Text style={styles.note}>Your dashboard counts down to this date</Text>
+        <Text style={styles.note}>You can change this later with Edit Profile</Text>
       </View>
     </SafeAreaView>
   );

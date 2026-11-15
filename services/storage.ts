@@ -7,6 +7,8 @@ const KEYS = {
   MPA_BLOCKS: '@briefbuilder/mpa_blocks',
   POLISH_COUNT: '@briefbuilder/polish_count',
   ONBOARDING_COMPLETE: '@briefbuilder/onboarding_complete',
+  REMINDER_SETTINGS: '@briefbuilder/reminder_settings',
+  REVIEW_STATE: '@briefbuilder/review_state',
 } as const;
 
 // ── Profile ──────────────────────────────────────────────────────────────────
@@ -65,6 +67,50 @@ export async function isOnboardingComplete(): Promise<boolean> {
 
 export async function setOnboardingComplete(): Promise<void> {
   await AsyncStorage.setItem(KEYS.ONBOARDING_COMPLETE, 'true');
+}
+
+// ── Reminders ─────────────────────────────────────────────────────────────────
+
+export type ReminderFrequencyDays = 7 | 14 | 30;
+
+export interface ReminderSettings {
+  enabled: boolean;
+  frequencyDays: ReminderFrequencyDays;
+  /** True once the app has offered reminders, so it only offers once. */
+  prompted: boolean;
+}
+
+export const DEFAULT_REMINDER_SETTINGS: ReminderSettings = {
+  enabled: false,
+  frequencyDays: 14,
+  prompted: false,
+};
+
+export async function getReminderSettings(): Promise<ReminderSettings> {
+  const raw = await AsyncStorage.getItem(KEYS.REMINDER_SETTINGS);
+  return raw
+    ? { ...DEFAULT_REMINDER_SETTINGS, ...(JSON.parse(raw) as Partial<ReminderSettings>) }
+    : DEFAULT_REMINDER_SETTINGS;
+}
+
+export async function saveReminderSettings(settings: ReminderSettings): Promise<void> {
+  await AsyncStorage.setItem(KEYS.REMINDER_SETTINGS, JSON.stringify(settings));
+}
+
+// ── Review prompt ─────────────────────────────────────────────────────────────
+
+export interface ReviewState {
+  askCount: number;
+  lastAskedAt?: string; // ISO date
+}
+
+export async function getReviewState(): Promise<ReviewState> {
+  const raw = await AsyncStorage.getItem(KEYS.REVIEW_STATE);
+  return raw ? (JSON.parse(raw) as ReviewState) : { askCount: 0 };
+}
+
+export async function saveReviewState(state: ReviewState): Promise<void> {
+  await AsyncStorage.setItem(KEYS.REVIEW_STATE, JSON.stringify(state));
 }
 
 // ── Dev / Reset ───────────────────────────────────────────────────────────────

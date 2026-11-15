@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { useEPBBlocks } from '../../hooks/useEPBBlocks';
+import { maybeRequestReview } from '../../services/review';
 import { MPA_DEFINITIONS, MPA_ORDER, MPA_CHAR_LIMIT } from '../../constants/mpa';
 import { Colors, Spacing, FontSize, Radius, Shadow } from '../../constants/theme';
 import { MPA } from '../../types';
@@ -49,7 +50,11 @@ function MPABlock({
   const copyBlock = async () => {
     if (block.statements.length === 0) return;
     await Clipboard.setStringAsync(block.statements.join(' '));
-    Alert.alert('Copied', `${def.label} block copied to clipboard.`);
+    // Copying a finished block is the payoff, so ask for a review after it.
+    const totalStatements = MPA_ORDER.reduce((n, m) => n + getBlock(m).statements.length, 0);
+    Alert.alert('Copied', `${def.label} block copied to clipboard.`, [
+      { text: 'OK', onPress: () => maybeRequestReview(totalStatements) },
+    ]);
   };
 
   const confirmRemove = (index: number) => {

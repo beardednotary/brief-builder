@@ -14,13 +14,14 @@ import { useLogEntries } from '../../hooks/useLogEntries';
 import { useEPBBlocks } from '../../hooks/useEPBBlocks';
 import { usePolish, PaywallError, FREE_POLISH_LIMIT } from '../../hooks/usePolish';
 import { useProfile } from '../../hooks/useProfile';
+import { maybeRequestReview } from '../../services/review';
 import { MPA_DEFINITIONS } from '../../constants/mpa';
 import { Colors, Spacing, FontSize, Radius, Shadow } from '../../constants/theme';
 
 export default function PolishScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { getEntry, updateEntry } = useLogEntries();
+  const { entries, getEntry, updateEntry } = useLogEntries();
   const { addStatement } = useEPBBlocks();
   const { profile } = useProfile();
   const { polish } = usePolish(profile);
@@ -70,6 +71,12 @@ export default function PolishScreen() {
     });
     setSelected(statement);
     setSaved(true);
+
+    // A statement just landed in the builder: a good moment to ask for a
+    // review, once the success state has had a second to register.
+    const finalized =
+      entries.filter((e) => e.status === 'finalized' && e.id !== id).length + 1;
+    setTimeout(() => maybeRequestReview(finalized), 1500);
   };
 
   if (!entry) {

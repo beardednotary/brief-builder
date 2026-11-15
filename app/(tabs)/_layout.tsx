@@ -1,5 +1,9 @@
+import { useEffect } from 'react';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useLogEntries } from '../../hooks/useLogEntries';
+import { useProfile } from '../../hooks/useProfile';
+import { syncRemindersFromStorage } from '../../services/notifications';
 import { Colors, FontSize } from '../../constants/theme';
 
 type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
@@ -11,6 +15,18 @@ function tabIcon(active: IoniconsName, inactive: IoniconsName) {
 }
 
 export default function TabsLayout() {
+  const { entries, loading } = useLogEntries();
+  const { profile } = useProfile();
+
+  // Keep reminders in step with the newest log entry and the close-out date.
+  // Entries are stored newest first.
+  const lastEntryAt = entries[0]?.createdAt;
+  const scod = profile?.reportingPeriodEnd;
+  useEffect(() => {
+    if (loading) return;
+    syncRemindersFromStorage({ lastEntryAt, scod });
+  }, [loading, lastEntryAt, scod]);
+
   return (
     <Tabs
       screenOptions={{
