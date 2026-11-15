@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.sm + 2,
     paddingVertical: Spacing.xs + 2,
   },
-  polishBtnText: { fontSize: FontSize.xs, fontWeight: '700', color: Colors.accent },
+  polishBtnText: { fontSize: FontSize.xs, fontWeight: '700', color: Colors.accentText },
   saveBtn: {
     backgroundColor: Colors.primary,
     borderRadius: Radius.sm,

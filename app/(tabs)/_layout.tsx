@@ -38,7 +38,7 @@ export default function TabsLayout() {
           backgroundColor: Colors.surface,
           borderTopColor: Colors.border,
           borderTopWidth: 1,
-          shadowColor: '#0A2463',
+          shadowColor: Colors.primary,
           shadowOffset: { width: 0, height: -3 },
           shadowOpacity: 0.08,
           shadowRadius: 10,

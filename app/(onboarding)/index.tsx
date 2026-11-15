@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Colors, Spacing, FontSize, Radius } from '../../constants/theme';
@@ -16,9 +16,11 @@ export default function Welcome() {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <View style={styles.hero}>
-        <View style={styles.iconWrapper}>
-          <Text style={styles.iconEmoji}>⭐</Text>
-        </View>
+        <Image
+          source={require('../../assets/icon.png')}
+          style={styles.icon}
+          accessibilityLabel="BriefBuilder icon"
+        />
         <Text style={styles.appName}>BriefBuilder</Text>
         <Text style={styles.tagline}>Write better EPB bullets all year</Text>
       </View>
@@ -54,16 +56,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: Spacing.xl,
   },
-  iconWrapper: {
-    width: 88,
-    height: 88,
-    borderRadius: Radius.lg,
-    backgroundColor: Colors.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.lg,
-  },
-  iconEmoji: { fontSize: 40 },
+  // The icon's background is the same navy as this screen, so only the mark shows.
+  icon: { width: 132, height: 132, marginBottom: Spacing.md },
   appName: {
     fontSize: FontSize.xxxl,
     fontWeight: '800',
@@ -100,7 +94,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: Spacing.sm,
   },
-  buttonText: { color: '#fff', fontSize: FontSize.lg, fontWeight: '700' },
+  buttonText: { color: Colors.onAccent, fontSize: FontSize.lg, fontWeight: '700' },
   note: {
     textAlign: 'center',
     color: 'rgba(255,255,255,0.5)',

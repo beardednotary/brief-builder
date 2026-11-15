@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
   bannerLeft: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
   bannerRank: {
     backgroundColor: Colors.accent,
-    color: '#fff',
+    color: Colors.onAccent,
     fontWeight: '800',
     fontSize: FontSize.sm,
     paddingHorizontal: Spacing.sm,
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
   },
-  addBtnText: { color: '#fff', fontWeight: '700', fontSize: FontSize.sm, letterSpacing: 0.3 },
+  addBtnText: { color: Colors.onAccent, fontWeight: '700', fontSize: FontSize.sm, letterSpacing: 0.3 },
 
   scroll: { padding: Spacing.lg, paddingBottom: Spacing.xxl },
 
@@ -335,5 +335,5 @@ const styles = StyleSheet.create({
   entryMeta: { flexDirection: 'row', alignItems: 'center', gap: Spacing.xs },
   entryMetaText: { fontSize: FontSize.xs, color: Colors.textMuted },
   entryMetaDot: { fontSize: FontSize.xs, color: Colors.textLight },
-  writeBtn: { fontSize: FontSize.xs, fontWeight: '700', color: Colors.accent },
+  writeBtn: { fontSize: FontSize.xs, fontWeight: '700', color: Colors.accentText },
 });

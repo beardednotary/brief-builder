@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm + 2,
     alignItems: 'center',
   },
-  upgradeBtnText: { color: '#fff', fontWeight: '700', fontSize: FontSize.sm },
+  upgradeBtnText: { color: Colors.onAccent, fontWeight: '700', fontSize: FontSize.sm },
   switchRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
   switchText: { flex: 1 },
   switchLabel: { fontSize: FontSize.md, fontWeight: '600', color: Colors.text },

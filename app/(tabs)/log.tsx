@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
   },
-  addBtnText: { color: '#fff', fontWeight: '700', fontSize: FontSize.sm, letterSpacing: 0.3 },
+  addBtnText: { color: Colors.onAccent, fontWeight: '700', fontSize: FontSize.sm, letterSpacing: 0.3 },
   filters: {
     flexDirection: 'row',
     paddingHorizontal: Spacing.lg,
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.sm,
     paddingVertical: 3,
   },
-  polishBtnText: { fontSize: FontSize.xs, fontWeight: '700', color: Colors.accent },
+  polishBtnText: { fontSize: FontSize.xs, fontWeight: '700', color: Colors.accentText },
   empty: { paddingTop: Spacing.xxl, alignItems: 'center' },
   emptyText: { color: Colors.textMuted, fontSize: FontSize.md, marginBottom: Spacing.sm },
   emptyLink: { color: Colors.primaryLight, fontWeight: '600', fontSize: FontSize.sm },
