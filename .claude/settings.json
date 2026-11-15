@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem c:\\\\Users\\\\rayro\\\\BriefBuilder -Name | Where-Object { $_ -notmatch \"^node_modules\" })",
+      "PowerShell(cd c:\\\\Users\\\\rayro\\\\BriefBuilder; \\(Test-Path node_modules\\\\expo-splash-screen\\) -and \\(Test-Path node_modules\\\\expo-clipboard\\))"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\rayro\\.claude\\projects\\c--Users-rayro-BriefBuilder\\memory"
+    ]
+  }
+}

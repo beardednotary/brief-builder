@@ -30,8 +30,15 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
+# local env files (never commit secrets)
+.env
+.env.*
+!.env.example
 .env*.local
+
+# Cloudflare Worker proxy
+.dev.vars
+.wrangler/
 
 # typescript
 *.tsbuildinfo
