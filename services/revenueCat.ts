@@ -125,23 +125,94 @@ async function getPackages(): Promise<PurchasesPackage[]> {
   return offerings.current?.availablePackages ?? [];
 }
 
-/** Store-localized price strings, keyed by product. Empty if they cannot be loaded. */
-export async function getPrices(): Promise<Partial<Record<ProductId, string>>> {
-  const prices: Partial<Record<ProductId, string>> = {};
+const PRODUCT_IDS: ProductId[] = [
+  'briefbuilder_pro_monthly',
+  'briefbuilder_pro_annual',
+  'briefbuilder_lifetime1',
+];
+
+export interface PlanDetails {
+  /** Store-localized price, such as "$14.99". */
+  price: string;
+  /** For subscriptions, the price spread per month, such as "$1.25". */
+  pricePerMonth: string | null;
+  /**
+   * Length of a free trial this user can actually get, such as "1 week".
+   * Null when the product has no free trial or the user is not eligible.
+   */
+  freeTrial: string | null;
+}
+
+function describePeriod(unit: string, count: number): string {
+  const name = unit.toLowerCase();
+  return count === 1 ? `1 ${name}` : `${count} ${name}s`;
+}
+
+/**
+ * Free-trial length per product, only where this user is eligible. Apple
+ * says a trial must not be shown to someone who cannot get it, so on iOS an
+ * unknown eligibility counts as no. Google Play only returns offers the user
+ * is eligible for, so there the offer itself is enough.
+ */
+async function getFreeTrials(
+  packages: { id: ProductId; pkg: PurchasesPackage }[]
+): Promise<Partial<Record<ProductId, string>>> {
+  const withTrial = packages.filter(({ pkg }) => pkg.product.introPrice?.price === 0);
+  if (withTrial.length === 0) return {};
+
+  let eligible = (_identifier: string) => Platform.OS === 'android';
+  if (Platform.OS === 'ios') {
+    const statuses = await Purchases.checkTrialOrIntroductoryPriceEligibility(
+      withTrial.map(({ pkg }) => pkg.product.identifier)
+    );
+    eligible = (identifier) =>
+      statuses[identifier]?.status ===
+      Purchases.INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_ELIGIBLE;
+  }
+
+  const trials: Partial<Record<ProductId, string>> = {};
+  for (const { id, pkg } of withTrial) {
+    const intro = pkg.product.introPrice;
+    if (intro && eligible(pkg.product.identifier)) {
+      trials[id] = describePeriod(intro.periodUnit, intro.periodNumberOfUnits * intro.cycles);
+    }
+  }
+  return trials;
+}
+
+/**
+ * Store-localized price and any free trial the user is eligible for, keyed by
+ * product. Empty if they cannot be loaded; callers fall back to list prices.
+ */
+export async function getPlanDetails(): Promise<Partial<Record<ProductId, PlanDetails>>> {
+  const details: Partial<Record<ProductId, PlanDetails>> = {};
   try {
-    const ids: ProductId[] = [
-      'briefbuilder_pro_monthly',
-      'briefbuilder_pro_annual',
-      'briefbuilder_lifetime1',
-    ];
+    const packages: { id: ProductId; pkg: PurchasesPackage }[] = [];
     for (const pkg of await getPackages()) {
-      const id = ids.find((candidate) => matchesProduct(pkg, candidate));
-      if (id) prices[id] = pkg.product.priceString;
+      const id = PRODUCT_IDS.find((candidate) => matchesProduct(pkg, candidate));
+      if (id) packages.push({ id, pkg });
+    }
+
+    let trials: Partial<Record<ProductId, string>> = {};
+    try {
+      trials = await getFreeTrials(packages);
+    } catch (err) {
+      // If eligibility cannot be checked, show plain prices rather than a
+      // trial the user might not get.
+      console.warn('Could not check free trial eligibility', err);
+    }
+
+    for (const { id, pkg } of packages) {
+      details[id] = {
+        price: pkg.product.priceString,
+        pricePerMonth: pkg.product.pricePerMonthString ?? null,
+        freeTrial: trials[id] ?? null,
+      };
     }
   } catch (err) {
     console.warn('Could not load RevenueCat offerings', err);
   }
-  return prices;
+  return details;
 }
 
 /**

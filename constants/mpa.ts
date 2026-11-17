@@ -52,3 +52,5 @@ export const MPA_ORDER: MPA[] = [
 
 export const MPA_CHAR_LIMIT = 350;
 export const MPA_TARGET_STATEMENTS = 2;
+/** Statements a finished EPB has: two in each of the four blocks. */
+export const EPB_TARGET_STATEMENTS = MPA_ORDER.length * MPA_TARGET_STATEMENTS;

@@ -22,11 +22,15 @@ import {
 import { useProfile } from '../../hooks/useProfile';
 import { maybeRequestReview } from '../../services/review';
 import * as storage from '../../services/storage';
-import { MPA_DEFINITIONS, MPA_ORDER, MPA_TARGET_STATEMENTS } from '../../constants/mpa';
+import {
+  MPA_DEFINITIONS,
+  MPA_ORDER,
+  MPA_TARGET_STATEMENTS,
+  EPB_TARGET_STATEMENTS,
+} from '../../constants/mpa';
 import { Colors, Spacing, FontSize, Radius, Shadow } from '../../constants/theme';
+import { plural } from '../../hooks/useUpgradePitch';
 import { MPA } from '../../types';
-
-const EPB_TARGET_STATEMENTS = MPA_ORDER.length * MPA_TARGET_STATEMENTS;
 
 function freeWritesText(remaining: number): string {
   if (remaining <= 0) return 'No free writes left. Upgrade for unlimited →';
@@ -188,6 +192,11 @@ function StatementWriter({ id }: { id: string }) {
   }
 
   const outOfFreeWrites = !isPro && remaining === 0;
+  // Free writes left but not enough to finish the EPB: say so while the
+  // result is on screen. At zero, the upsell card below takes over.
+  const epbNeeded = Math.max(0, EPB_TARGET_STATEMENTS - epbDone);
+  const freeFallsShort =
+    !isPro && remaining !== null && remaining > 0 && remaining < epbNeeded;
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -306,6 +315,20 @@ function StatementWriter({ id }: { id: string }) {
               </>
             )}
             <Text style={styles.nextPrompt}>{nextPrompt}</Text>
+
+            {freeFallsShort && remaining !== null && (
+              <TouchableOpacity
+                style={styles.shortfall}
+                onPress={() => router.push('/paywall')}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.shortfallText}>
+                  Your EPB needs {plural(epbNeeded, 'more statement', 'more statements')} and you
+                  have {plural(remaining, 'free write')} left.{' '}
+                  <Text style={styles.shortfallLink}>Pro writes them all →</Text>
+                </Text>
+              </TouchableOpacity>
+            )}
 
             {epbComplete ? (
               <TouchableOpacity
@@ -484,6 +507,16 @@ const styles = StyleSheet.create({
     marginTop: Spacing.md,
     marginBottom: Spacing.md,
   },
+  shortfall: {
+    backgroundColor: Colors.background,
+    borderRadius: Radius.sm,
+    borderLeftWidth: 3,
+    borderLeftColor: Colors.accent,
+    padding: Spacing.sm + 2,
+    marginBottom: Spacing.md,
+  },
+  shortfallText: { fontSize: FontSize.sm, color: Colors.text, lineHeight: 19 },
+  shortfallLink: { fontWeight: '800', color: Colors.accentText },
   nextBtn: {
     backgroundColor: Colors.accent,
     borderRadius: Radius.md,

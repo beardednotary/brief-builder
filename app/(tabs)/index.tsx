@@ -4,6 +4,8 @@ import { useRouter } from 'expo-router';
 import { useProfile } from '../../hooks/useProfile';
 import { useEPBBlocks } from '../../hooks/useEPBBlocks';
 import { useLogEntries } from '../../hooks/useLogEntries';
+import { useUpgradePitch, daysUntil, plural, UpgradePitch } from '../../hooks/useUpgradePitch';
+import { FREE_POLISH_LIMIT } from '../../hooks/usePolish';
 import { MPA_DEFINITIONS, MPA_ORDER, MPA_CHAR_LIMIT } from '../../constants/mpa';
 import { Colors, Spacing, FontSize, Radius, Shadow } from '../../constants/theme';
 import { LogEntry, MPA } from '../../types';
@@ -15,11 +17,39 @@ const MPA_ACCENT: Record<MPA, string> = {
   improving_the_unit: Colors.mpaPurple,
 };
 
-function daysUntil(iso: string): number {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const target = new Date(iso + 'T00:00:00');
-  return Math.ceil((target.getTime() - today.getTime()) / 86400000);
+/**
+ * What the free-writes card says, or null when it should not show: for Pro
+ * users, before anything is logged, and once the EPB has all its statements.
+ */
+function proCardCopy(pitch: UpgradePitch): { title: string; body: string; strong: boolean } | null {
+  const left = pitch.freeWritesLeft;
+  const needed = pitch.statementsNeeded;
+  if (pitch.isPro || left === null || pitch.entriesLogged === 0 || needed === 0) return null;
+
+  const deadline =
+    pitch.closeOutLabel && pitch.daysToCloseOut !== null
+      ? ` before your ${pitch.closeOutLabel} close-out`
+      : '';
+
+  if (left === 0) {
+    return {
+      title: 'Free writes used',
+      body: `Your EPB still needs ${plural(needed, 'statement')}${deadline}. Pro writes the rest, tailored to your AFSC.`,
+      strong: true,
+    };
+  }
+  if (left < needed) {
+    return {
+      title: `${left} of ${FREE_POLISH_LIMIT} free writes left`,
+      body: `Your EPB needs ${plural(needed, 'more statement', 'more statements')}${deadline}. Free writes cover ${left}; Pro covers the rest.`,
+      strong: true,
+    };
+  }
+  return {
+    title: `${left} of ${FREE_POLISH_LIMIT} free writes left`,
+    body: 'Enough to finish your EPB. Pro adds unlimited rewrites and statements tuned to your AFSC.',
+    strong: false,
+  };
 }
 
 function statusDot(entry: LogEntry): string {
@@ -39,6 +69,7 @@ export default function Dashboard() {
   const { profile } = useProfile();
   const { blocks } = useEPBBlocks();
   const { entries } = useLogEntries();
+  const proCard = proCardCopy(useUpgradePitch());
 
   const recent = entries.slice(0, 5);
   const scod = profile?.reportingPeriodEnd;
@@ -91,6 +122,27 @@ export default function Dashboard() {
               )}
             </View>
           </View>
+        )}
+
+        {/* Free writes vs. what the EPB still needs */}
+        {proCard && (
+          <TouchableOpacity
+            style={[styles.proCard, proCard.strong && styles.proCardStrong]}
+            onPress={() => router.push('/paywall')}
+            activeOpacity={0.85}
+          >
+            <View style={styles.proCardText}>
+              <Text style={[styles.proTitle, proCard.strong && styles.proTitleStrong]}>
+                {proCard.title}
+              </Text>
+              <Text style={[styles.proBody, proCard.strong && styles.proBodyStrong]}>
+                {proCard.body}
+              </Text>
+            </View>
+            <Text style={[styles.proCta, proCard.strong && styles.proCtaStrong]}>
+              {proCard.strong ? 'Go Pro →' : 'See Pro →'}
+            </Text>
+          </TouchableOpacity>
         )}
 
         {/* MPA Grid */}
@@ -257,6 +309,27 @@ const styles = StyleSheet.create({
   scodRight: { flex: 1 },
   scodLabel: { fontSize: FontSize.md, fontWeight: '700', color: Colors.text },
   scodDate: { fontSize: FontSize.xs, color: Colors.textMuted, marginTop: 2 },
+
+  // Free writes / Pro card
+  proCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: Radius.md,
+    padding: Spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.lg,
+    borderLeftWidth: 4,
+    borderLeftColor: Colors.accent,
+    ...Shadow.card,
+  },
+  proCardStrong: { backgroundColor: Colors.primary, borderLeftColor: Colors.accent },
+  proCardText: { flex: 1, marginRight: Spacing.md },
+  proTitle: { fontSize: FontSize.md, fontWeight: '700', color: Colors.text, marginBottom: 2 },
+  proTitleStrong: { color: '#fff' },
+  proBody: { fontSize: FontSize.sm, color: Colors.textMuted, lineHeight: 19 },
+  proBodyStrong: { color: 'rgba(255,255,255,0.8)' },
+  proCta: { fontSize: FontSize.sm, fontWeight: '800', color: Colors.accentText },
+  proCtaStrong: { color: Colors.accent },
 
   // Section titles
   sectionTitle: {
