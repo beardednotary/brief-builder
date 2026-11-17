@@ -179,11 +179,15 @@ An iPad set is required too while `supportsTablet` is true in `app.json`.
 
 ## Before submitting
 
-- [ ] In-app purchases created in App Store Connect and Play Console
-- [ ] RevenueCat entitlement, products and offering set up; SDK keys in `.env` and `eas.json`
-- [ ] `REVENUECAT_SECRET_KEY` set on the Worker, Worker deployed
-- [ ] dahvio.com privacy page updated (Anthropic, RevenueCat, anonymous install ID, referral counts)
+- [x] In-app purchases created in App Store Connect, all three Ready to Submit (2026-11-17)
+- [ ] In-app purchases created in Play Console
+- [x] RevenueCat (iOS): entitlement `pro`, three products, `default` offering; iOS SDK key in `.env` and `eas.json`
+- [ ] RevenueCat (Android): Google Play app, products, Android SDK key
+- [x] `REVENUECAT_SECRET_KEY` set on the Worker, Worker deployed (2026-11-17)
+- [ ] dahvio.com privacy page updated (Anthropic, RevenueCat, anonymous install ID, referral counts): written, live once the site PR is merged
 - [x] dahvio.com/epb-builder, /epb-builder-support and /epb-builder-privacy respond (checked 2026-11-16)
-- [ ] Sandbox purchase of each product, plus a restore
+- [x] Sandbox purchase: Annual (2026-11-17)
+- [ ] Sandbox purchase: Monthly and Lifetime, plus a restore
+- [ ] Referral redeem between two installs
 - [ ] Sandbox check that a second referral grant extends the first
 - [ ] Screenshots captured from a real build
