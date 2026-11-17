@@ -184,7 +184,7 @@ An iPad set is required too while `supportsTablet` is true in `app.json`.
 - [x] RevenueCat (iOS): entitlement `pro`, three products, `default` offering; iOS SDK key in `.env` and `eas.json`
 - [ ] RevenueCat (Android): Google Play app, products, Android SDK key
 - [x] `REVENUECAT_SECRET_KEY` set on the Worker, Worker deployed (2026-11-17)
-- [ ] dahvio.com privacy page updated (Anthropic, RevenueCat, anonymous install ID, referral counts): written, live once the site PR is merged
+- [x] dahvio.com privacy page updated (Anthropic, RevenueCat, anonymous install ID, referral counts): live 2026-11-17
 - [x] dahvio.com/epb-builder, /epb-builder-support and /epb-builder-privacy respond (checked 2026-11-16)
 - [x] Sandbox purchase: Annual (2026-11-17)
 - [ ] Sandbox purchase: Monthly and Lifetime, plus a restore
