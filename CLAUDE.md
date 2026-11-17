@@ -87,6 +87,7 @@ type Component = 'RegAF' | 'AFR' | 'ANG';
 ## Monetization Gate
 - 5 free AI polishes total (tracked in AsyncStorage)
 - On 6th attempt → RevenueCat paywall
+- Other upgrade prompts: the paywall once after first-time onboarding (skipped if a referral code gave Pro), a free-writes card on the dashboard, and a shortfall line after saving a statement. They compare free writes left with the 8 statements an EPB needs; `hooks/useUpgradePitch.ts` holds those numbers
 - The first regenerate on each entry is free; later ones count as a write
 - Pro unlocks: unlimited polishes, AFSC-specific context injection (reminders are free for everyone)
 - Check `usePolish.ts` before every API call

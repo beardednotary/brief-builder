@@ -80,17 +80,23 @@ export default function SCODScreen() {
   const [referralCode, setReferralCode] = useState('');
   const [finishing, setFinishing] = useState(false);
 
-  const finish = async () => {
+  // offerPro: show the paywall once, right after first-time setup, so new
+  // users see what Pro adds before they start. Never when editing the
+  // profile, and never right after a referral code has given them Pro.
+  const finish = async (offerPro = false) => {
     await saveProfile({ reportingPeriodEnd: scod });
     await storage.setOnboardingComplete();
     router.replace('/(tabs)');
+    if (offerPro && firstRun) {
+      router.push({ pathname: '/paywall', params: { from: 'onboarding' } });
+    }
   };
 
   const handleFinish = async () => {
     if (finishing) return;
     const code = referralCode.trim();
     if (!code) {
-      await finish();
+      await finish(true);
       return;
     }
 
@@ -105,14 +111,14 @@ export default function SCODScreen() {
         status.justGranted > 0
           ? 'You have a free month of Pro: unlimited AI writing, starting now.'
           : 'Your free month has been saved to this device.',
-        [{ text: 'Start Building', onPress: finish }],
+        [{ text: 'Start Building', onPress: () => finish() }],
         { cancelable: false }
       );
     } catch (err) {
       setFinishing(false);
       Alert.alert('Code not accepted', err instanceof Error ? err.message : 'Try again.', [
         { text: 'Fix it', style: 'cancel' },
-        { text: 'Skip for now', onPress: finish },
+        { text: 'Skip for now', onPress: () => finish(true) },
       ]);
     }
   };

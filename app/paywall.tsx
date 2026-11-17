@@ -11,7 +11,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useProfile } from '../hooks/useProfile';
 import { useUpgradePitch, plural, UpgradePitch } from '../hooks/useUpgradePitch';
 import {
@@ -22,6 +22,7 @@ import {
   ProductId,
 } from '../services/revenueCat';
 import { EPB_TARGET_STATEMENTS } from '../constants/mpa';
+import { FREE_POLISH_LIMIT } from '../hooks/usePolish';
 import { Colors, Spacing, FontSize, Radius } from '../constants/theme';
 import { PRIVACY_URL, TERMS_URL } from '../constants/links';
 
@@ -47,13 +48,21 @@ const BENEFITS = [
   'AFSC-specific context in every prompt',
 ];
 
-function heading(pitch: UpgradePitch): string {
+function heading(pitch: UpgradePitch, fromOnboarding: boolean): string {
+  if (fromOnboarding) return 'Get your whole EPB written';
   return pitch.statementsNeeded > 0 && pitch.entriesLogged > 0
     ? 'Finish your EPB with Pro'
     : 'Unlock BriefBuilder Pro';
 }
 
-function subheading(pitch: UpgradePitch): string {
+function subheading(pitch: UpgradePitch, fromOnboarding: boolean): string {
+  // Straight after setup nothing is logged yet, so pitch the whole EPB.
+  if (fromOnboarding) {
+    const gap = `needs ${EPB_TARGET_STATEMENTS} statements, and the free plan writes ${FREE_POLISH_LIMIT}. Pro writes every one, tailored to your AFSC.`;
+    return pitch.closeOutLabel
+      ? `Your EPB closes out ${pitch.closeOutLabel}. It ${gap}`
+      : `An EPB ${gap}`;
+  }
   const needed = pitch.statementsNeeded;
   if (needed > 0 && pitch.entriesLogged > 0) {
     const statements = plural(needed, 'statement');
@@ -78,6 +87,8 @@ function periodText(
 
 export default function Paywall() {
   const router = useRouter();
+  const { from } = useLocalSearchParams<{ from?: string }>();
+  const fromOnboarding = from === 'onboarding';
   const { saveProfile } = useProfile();
   const pitch = useUpgradePitch();
   const [busy, setBusy] = useState(false);
@@ -137,8 +148,8 @@ export default function Paywall() {
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.hero}>
           <Text style={styles.badge}>PRO</Text>
-          <Text style={styles.heading}>{heading(pitch)}</Text>
-          <Text style={styles.subheading}>{subheading(pitch)}</Text>
+          <Text style={styles.heading}>{heading(pitch, fromOnboarding)}</Text>
+          <Text style={styles.subheading}>{subheading(pitch, fromOnboarding)}</Text>
         </View>
 
         {showProgress && (
@@ -210,6 +221,19 @@ export default function Paywall() {
         </View>
 
         {busy && <ActivityIndicator color="#fff" style={styles.busy} />}
+
+        {/* After setup, make carrying on free as easy to find as the ✕. */}
+        {fromOnboarding && (
+          <TouchableOpacity
+            style={styles.continueFreeBtn}
+            onPress={() => router.back()}
+            disabled={busy}
+          >
+            <Text style={styles.continueFreeText}>
+              Start with {FREE_POLISH_LIMIT} free writes
+            </Text>
+          </TouchableOpacity>
+        )}
 
         <TouchableOpacity
           style={styles.referBtn}
@@ -330,6 +354,15 @@ const styles = StyleSheet.create({
   planPrice: { fontSize: FontSize.xl, fontWeight: '800', color: '#fff' },
   planPriceHighlight: { color: Colors.onAccent },
   busy: { marginBottom: Spacing.md },
+  continueFreeBtn: {
+    alignItems: 'center',
+    paddingVertical: Spacing.md,
+    marginBottom: Spacing.xs,
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+  },
+  continueFreeText: { color: '#fff', fontSize: FontSize.md, fontWeight: '600' },
   referBtn: { alignItems: 'center', paddingVertical: Spacing.sm },
   referText: { color: Colors.accent, fontSize: FontSize.sm, fontWeight: '700' },
   restoreBtn: { alignItems: 'center', paddingVertical: Spacing.md },
