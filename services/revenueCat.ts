@@ -7,10 +7,11 @@
 //     all attached to `pro` and added to the current offering
 //   - Public SDK keys in EXPO_PUBLIC_REVENUECAT_IOS_KEY / EXPO_PUBLIC_REVENUECAT_ANDROID_KEY
 //
-// Real purchases need a development or store build. In Expo Go the SDK runs
-// in a preview mode with mocked results.
+// Real purchases need a development or store build. In Expo Go purchases are
+// off: the app runs as free and the paywall shows its built-in prices.
 
 import { Platform } from 'react-native';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import Purchases, { CustomerInfo, PurchasesPackage } from 'react-native-purchases';
 
 export const PRO_ENTITLEMENT_ID = 'pro';
@@ -30,15 +31,29 @@ const API_KEY =
     android: process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY,
   }) ?? '';
 
-let configured = false;
+// Expo Go has no native store. The SDK rejects a real store key there, so
+// purchases are switched off and the paywall shows its built-in prices.
+const IN_EXPO_GO = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
-/** Safe to call often. Returns false when no key is set for this platform. */
+let configured = false;
+let unavailable = IN_EXPO_GO || !API_KEY;
+
+/**
+ * Safe to call often. Returns false when purchases cannot be used: no key for
+ * this platform, running in Expo Go, or the SDK refused to start.
+ */
 export function configurePurchases(): boolean {
   if (configured) return true;
-  if (!API_KEY) return false;
-  Purchases.configure({ apiKey: API_KEY });
-  configured = true;
-  return true;
+  if (unavailable) return false;
+  try {
+    Purchases.configure({ apiKey: API_KEY });
+    configured = true;
+  } catch (err) {
+    // Do not retry: the same key will fail the same way on every call.
+    unavailable = true;
+    console.warn('RevenueCat could not be configured', err);
+  }
+  return configured;
 }
 
 function planFrom(info: CustomerInfo): ProPlan {
