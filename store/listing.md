@@ -61,7 +61,7 @@ WRITE PERFORMANCE STATEMENTS, NOT OLD EPR BULLETS
 • Action plus impact, with your numbers, dollars, percentages and time saved kept in
 • Plain language. No "consummate professional", no "go-to Airman"
 • A live character count on every statement and every block
-• Edit any statement yourself, or ask for another version
+• Not quite right? Ask for another version
 
 BUILD ALL FOUR BLOCKS
 • Executing the Mission
@@ -73,7 +73,7 @@ See which blocks are done and which still need a statement, then copy a finished
 MADE FOR ENLISTED AIRMEN
 • Every rank from AB to CMSgt
 • Regular Air Force, Air Force Reserve and Air National Guard
-• All 10 Airman Leadership Qualities, with definitions
+• All 10 Airman Leadership Qualities, sorted under the block each belongs to
 • Links to AFI 36-2406, AF Form 716 and the approved acronym list
 
 YOUR NOTES STAY ON YOUR PHONE
@@ -90,7 +90,8 @@ Terms of Use: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
 Privacy Policy: https://dahvio.com/epb-builder-privacy
 ```
 
-2,578 / 4,000.
+2,585 / 4,000 (rechecked 2026-11-17 after removing two claims the app does not
+back up: editing a statement's text, and ALQ definitions).
 
 ### What's New (version 1.0.0)
 
@@ -130,19 +131,20 @@ Tracking: **No**.
 
 The Worker does not store entry text, but the AI provider keeps API inputs
 for a limited time, so declaring User Content is the safe answer. The privacy
-page on dahvio.com needs to say the same three things, and name Anthropic and
-RevenueCat.
+page on dahvio.com says the same three things and names Anthropic and
+RevenueCat (updated 2026-11-17).
 
 Google Play Data safety: same three items, "collected", not "shared" for
-advertising, encrypted in transit. Data deletion: there is no account; the
-user deletes data by removing the app.
+advertising, encrypted in transit. Data deletion: there is no account; data on
+the device goes when the app is removed, and the referral record is deleted on
+request by emailing the referral code (as the privacy page says).
 
 ## Notes for App Review
 
 ```
 BriefBuilder needs no account or sign-in.
 
-To reach the AI feature: finish the four onboarding screens (any rank, any AFSC), tap Log, add an entry, then tap Write. The app asks permission before the entry is sent to Anthropic's Claude API, which writes the statements. Five AI writes are free; the sixth opens the paywall.
+To reach the AI feature: finish the four onboarding screens (any rank, any AFSC). The paywall appears once after onboarding; tap "Start with 5 free writes" or the close button to continue. Then tap Log, add an entry, and tap Write. The app asks permission before the entry is sent to Anthropic's Claude API, which writes the statements. Five AI writes are free; the sixth opens the paywall.
 
 The paywall is also reachable from the Profile tab. Purchases use RevenueCat. Terms of Use and Privacy Policy links are at the bottom of the paywall.
 
