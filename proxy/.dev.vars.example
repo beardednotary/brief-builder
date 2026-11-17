@@ -1,3 +1,8 @@
 # Local development only. Copy this file to .dev.vars (which is gitignored)
-# and paste your key. Production uses: npx wrangler secret put ANTHROPIC_API_KEY
+# and paste your keys. Production uses:
+#   npx wrangler secret put ANTHROPIC_API_KEY
+#   npx wrangler secret put REVENUECAT_SECRET_KEY
 ANTHROPIC_API_KEY=sk-ant-...
+# RevenueCat secret API key (v1), used to grant referral months. Optional
+# for local work: without it, referral months are recorded but stay banked.
+REVENUECAT_SECRET_KEY=sk_...

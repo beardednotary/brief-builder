@@ -361,7 +361,7 @@ Reminders are free for everyone (decided 2026-11-15).
 **RevenueCat product IDs (suggested):**
 - `briefbuilder_pro_monthly`
 - `briefbuilder_pro_annual`
-- `briefbuilder_lifetime`
+- `briefbuilder_lifetime1`
 
 ---
 

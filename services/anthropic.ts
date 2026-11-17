@@ -1,4 +1,5 @@
 import { LogEntry, UserProfile } from '../types';
+import { getAppUserId } from './revenueCat';
 
 // The app never holds an Anthropic key. It calls the BriefBuilder proxy
 // (see proxy/), which builds the prompt and calls Claude server-side.
@@ -14,6 +15,10 @@ export async function polishEntry(entry: LogEntry, profile: UserProfile): Promis
     throw new Error('EXPO_PUBLIC_PROXY_URL is not set. Add it to your .env file and restart Expo.');
   }
 
+  // Anonymous install ID. The proxy uses it only to credit a referral when
+  // someone who joined with a friend's code writes a statement.
+  const appUserId = (await getAppUserId()) ?? undefined;
+
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
@@ -23,6 +28,7 @@ export async function polishEntry(entry: LogEntry, profile: UserProfile): Promis
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        appUserId,
         entry: {
           inputMode: entry.inputMode,
           rawText: entry.rawText,

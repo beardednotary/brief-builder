@@ -9,6 +9,8 @@ const KEYS = {
   ONBOARDING_COMPLETE: '@briefbuilder/onboarding_complete',
   REMINDER_SETTINGS: '@briefbuilder/reminder_settings',
   REVIEW_STATE: '@briefbuilder/review_state',
+  REFERRAL_JOINED: '@briefbuilder/referral_joined',
+  AI_CONSENT: '@briefbuilder/ai_consent',
 } as const;
 
 // ── Profile ──────────────────────────────────────────────────────────────────
@@ -111,6 +113,28 @@ export async function getReviewState(): Promise<ReviewState> {
 
 export async function saveReviewState(state: ReviewState): Promise<void> {
   await AsyncStorage.setItem(KEYS.REVIEW_STATE, JSON.stringify(state));
+}
+
+// ── Referrals ─────────────────────────────────────────────────────────────────
+
+/** True once this install has shared its code or used a friend's. */
+export async function hasJoinedReferrals(): Promise<boolean> {
+  return (await AsyncStorage.getItem(KEYS.REFERRAL_JOINED)) === 'true';
+}
+
+export async function setReferralJoined(): Promise<void> {
+  await AsyncStorage.setItem(KEYS.REFERRAL_JOINED, 'true');
+}
+
+// ── AI data sharing consent ──────────────────────────────────────────────────
+
+/** True once the user has agreed to entries being sent to the AI service. */
+export async function hasAiConsent(): Promise<boolean> {
+  return (await AsyncStorage.getItem(KEYS.AI_CONSENT)) === 'true';
+}
+
+export async function setAiConsent(): Promise<void> {
+  await AsyncStorage.setItem(KEYS.AI_CONSENT, 'true');
 }
 
 // ── Dev / Reset ───────────────────────────────────────────────────────────────

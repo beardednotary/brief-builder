@@ -67,6 +67,8 @@ export interface LogEntry {
   proficiencyTarget?: ProficiencyLevel;
 
   draftStatements?: string[];
+  /** How many times AI has written statements for this entry. */
+  writeCount?: number;
   selectedStatement?: string;
   characterCount?: number;
 

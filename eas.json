@@ -6,7 +6,8 @@
   "build": {
     "base": {
       "env": {
-        "EXPO_PUBLIC_PROXY_URL": "https://briefbuilder-proxy.sendoff-web.workers.dev"
+        "EXPO_PUBLIC_PROXY_URL": "https://briefbuilder-proxy.sendoff-web.workers.dev",
+        "EXPO_PUBLIC_REVENUECAT_IOS_KEY": "appl_ormopPyEwAeMHCsSNXzerwfkCcP"
       }
     },
     "development": {

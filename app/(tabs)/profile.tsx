@@ -25,6 +25,7 @@ import {
   syncReminders,
 } from '../../services/notifications';
 import { FREE_POLISH_LIMIT } from '../../hooks/usePolish';
+import ReferralCard from '../../components/referral/ReferralCard';
 import {
   DAHVIO_APPS,
   ExternalLink,
@@ -199,6 +200,8 @@ export default function ProfileScreen() {
             </>
           )}
         </View>
+
+        <ReferralCard />
 
         {/* Reminders */}
         <View style={styles.card}>

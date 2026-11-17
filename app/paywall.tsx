@@ -1,12 +1,26 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+  Alert,
+  Linking,
+  Platform,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useProfile } from '../hooks/useProfile';
-import { purchasePro, restorePurchases, ProductId } from '../services/revenueCat';
+import { getPrices, purchasePro, restorePurchases, ProductId } from '../services/revenueCat';
 import { Colors, Spacing, FontSize, Radius } from '../constants/theme';
+import { PRIVACY_URL, TERMS_URL } from '../constants/links';
+
+const STORE_NAME = Platform.OS === 'android' ? 'Google Play' : 'App Store';
 
 const PLANS: { id: ProductId; label: string; price: string; period: string; highlight?: boolean }[] = [
-  { id: 'briefbuilder_lifetime', label: 'Lifetime', price: '$24.99', period: 'one-time', highlight: true },
+  { id: 'briefbuilder_lifetime1', label: 'Lifetime', price: '$24.99', period: 'one-time', highlight: true },
   { id: 'briefbuilder_pro_annual', label: 'Annual', price: '$14.99', period: 'per year (~$1.25/mo)' },
   { id: 'briefbuilder_pro_monthly', label: 'Monthly', price: '$3.99', period: 'per month' },
 ];
@@ -19,20 +33,45 @@ const BENEFITS = [
 export default function Paywall() {
   const router = useRouter();
   const { saveProfile } = useProfile();
+  const [busy, setBusy] = useState(false);
+  // Store-localized prices replace the defaults above once they load.
+  const [prices, setPrices] = useState<Partial<Record<ProductId, string>>>({});
+
+  useEffect(() => {
+    getPrices().then(setPrices);
+  }, []);
 
   const handlePurchase = async (productId: ProductId) => {
-    const success = await purchasePro(productId);
-    if (success) {
-      await saveProfile({ isPro: true });
-      router.back();
+    if (busy) return;
+    setBusy(true);
+    try {
+      const success = await purchasePro(productId);
+      if (success) {
+        await saveProfile({ isPro: true });
+        router.back();
+      }
+    } catch (err) {
+      Alert.alert('Purchase not completed', err instanceof Error ? err.message : 'Try again.');
+    } finally {
+      setBusy(false);
     }
   };
 
   const handleRestore = async () => {
-    const success = await restorePurchases();
-    if (success) {
-      await saveProfile({ isPro: true });
-      router.back();
+    if (busy) return;
+    setBusy(true);
+    try {
+      const success = await restorePurchases();
+      if (success) {
+        await saveProfile({ isPro: true });
+        router.back();
+      } else {
+        Alert.alert('Nothing to restore', 'No previous Pro purchase was found for this account.');
+      }
+    } catch (err) {
+      Alert.alert('Restore failed', err instanceof Error ? err.message : 'Try again.');
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -68,6 +107,7 @@ export default function Paywall() {
               key={plan.id}
               style={[styles.planCard, plan.highlight && styles.planCardHighlight]}
               onPress={() => handlePurchase(plan.id)}
+              disabled={busy}
               activeOpacity={0.85}
             >
               {plan.highlight && (
@@ -84,20 +124,46 @@ export default function Paywall() {
                 </Text>
               </View>
               <Text style={[styles.planPrice, plan.highlight && styles.planPriceHighlight]}>
-                {plan.price}
+                {prices[plan.id] ?? plan.price}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        <TouchableOpacity style={styles.restoreBtn} onPress={handleRestore}>
+        {busy && <ActivityIndicator color="#fff" style={styles.busy} />}
+
+        <TouchableOpacity
+          style={styles.referBtn}
+          onPress={() => {
+            // Close this modal, then switch the tabs underneath to Profile.
+            router.back();
+            router.navigate('/(tabs)/profile');
+          }}
+          disabled={busy}
+        >
+          <Text style={styles.referText}>
+            Or earn free months of Pro: refer a friend →
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.restoreBtn} onPress={handleRestore} disabled={busy}>
           <Text style={styles.restoreText}>Restore Purchases</Text>
         </TouchableOpacity>
 
         <Text style={styles.legal}>
-          Subscriptions auto-renew unless cancelled. Cancel anytime in your App Store settings.
-          Lifetime is a one-time purchase.
+          Monthly and Annual renew automatically at the price shown until cancelled. Cancel
+          anytime in your {STORE_NAME} settings. Lifetime is a one-time purchase.
         </Text>
+
+        <View style={styles.legalLinks}>
+          <TouchableOpacity onPress={() => Linking.openURL(TERMS_URL)}>
+            <Text style={styles.legalLink}>Terms of Use</Text>
+          </TouchableOpacity>
+          <Text style={styles.legalDot}>·</Text>
+          <TouchableOpacity onPress={() => Linking.openURL(PRIVACY_URL)}>
+            <Text style={styles.legalLink}>Privacy Policy</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -159,6 +225,9 @@ const styles = StyleSheet.create({
   planPeriodHighlight: { color: Colors.onAccent, opacity: 0.75 },
   planPrice: { fontSize: FontSize.xl, fontWeight: '800', color: '#fff' },
   planPriceHighlight: { color: Colors.onAccent },
+  busy: { marginBottom: Spacing.md },
+  referBtn: { alignItems: 'center', paddingVertical: Spacing.sm },
+  referText: { color: Colors.accent, fontSize: FontSize.sm, fontWeight: '700' },
   restoreBtn: { alignItems: 'center', paddingVertical: Spacing.md },
   restoreText: { color: 'rgba(255,255,255,0.55)', fontSize: FontSize.sm },
   legal: {
@@ -168,4 +237,17 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     paddingHorizontal: Spacing.md,
   },
+  legalLinks: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: Spacing.md,
+  },
+  legalLink: {
+    fontSize: FontSize.xs,
+    color: 'rgba(255,255,255,0.7)',
+    textDecorationLine: 'underline',
+    paddingVertical: Spacing.xs,
+  },
+  legalDot: { color: 'rgba(255,255,255,0.4)', marginHorizontal: Spacing.sm },
 });

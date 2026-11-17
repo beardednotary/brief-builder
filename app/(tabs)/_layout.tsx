@@ -3,6 +3,7 @@ import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useLogEntries } from '../../hooks/useLogEntries';
 import { useProfile } from '../../hooks/useProfile';
+import { useProSync } from '../../hooks/useProSync';
 import { syncRemindersFromStorage } from '../../services/notifications';
 import { Colors, FontSize } from '../../constants/theme';
 
@@ -17,6 +18,7 @@ function tabIcon(active: IoniconsName, inactive: IoniconsName) {
 export default function TabsLayout() {
   const { entries, loading } = useLogEntries();
   const { profile } = useProfile();
+  useProSync();
 
   // Keep reminders in step with the newest log entry and the close-out date.
   // Entries are stored newest first.

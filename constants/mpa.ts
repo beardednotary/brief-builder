@@ -51,3 +51,4 @@ export const MPA_ORDER: MPA[] = [
 ];
 
 export const MPA_CHAR_LIMIT = 350;
+export const MPA_TARGET_STATEMENTS = 2;

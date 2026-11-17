@@ -4,9 +4,19 @@
 // Claude with the server-held key, and returns the parsed statements. The
 // Anthropic key never ships inside the app, and because the prompt is built
 // here the endpoint can only be used to write EPB statements.
+//
+// It also keeps the referral ledger (see referrals.ts), the one piece of
+// state the backend holds: anonymous install IDs, codes, and months earned.
 
 import Anthropic from '@anthropic-ai/sdk';
 import { buildPrompt } from '../../constants/prompts';
+import {
+  creditReferrerOnWrite,
+  getReferralStatus,
+  isValidAppUserId,
+  redeemReferralCode,
+  ReferralError,
+} from './referrals';
 import type {
   AirmanRank,
   ALQ,
@@ -20,6 +30,11 @@ import type {
 interface Env {
   ANTHROPIC_API_KEY: string;
   WRITE_LIMITER: RateLimit;
+  // Referrals. All optional so statement writing keeps working without them.
+  REFERRAL_LIMITER?: RateLimit;
+  DB?: D1Database;
+  REVENUECAT_SECRET_KEY?: string;
+  REVENUECAT_ENTITLEMENT_ID?: string;
 }
 
 const MODEL = 'claude-sonnet-5-5';
@@ -147,22 +162,45 @@ function parseStatements(raw: string): string[] {
     .slice(0, 2);
 }
 
-async function writeStatements(request: Request, env: Env): Promise<Response> {
+async function readJson(request: Request): Promise<unknown> {
+  const text = await request.text();
+  if (text.length > MAX_BODY_BYTES) throw new RequestError(413, 'Request is too large.');
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new RequestError(400, 'Request body must be JSON.');
+  }
+}
+
+async function handleReferral(request: Request, env: Env, action: 'status' | 'redeem'): Promise<Response> {
+  if (env.REFERRAL_LIMITER) {
+    const ip = request.headers.get('cf-connecting-ip') ?? 'unknown';
+    const { success } = await env.REFERRAL_LIMITER.limit({ key: ip });
+    if (!success) return json(429, { error: 'Too many requests. Wait a minute and try again.' });
+  }
+
+  const body = await readJson(request);
+  const { appUserId, code } = (typeof body === 'object' && body !== null ? body : {}) as {
+    appUserId?: unknown;
+    code?: unknown;
+  };
+  if (!isValidAppUserId(appUserId)) throw new RequestError(400, 'Invalid request.');
+
+  const status =
+    action === 'redeem'
+      ? await redeemReferralCode(env, appUserId, code)
+      : await getReferralStatus(env, appUserId);
+  return json(200, status);
+}
+
+async function writeStatements(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
   const ip = request.headers.get('cf-connecting-ip') ?? 'unknown';
   const { success } = await env.WRITE_LIMITER.limit({ key: ip });
   if (!success) return json(429, { error: 'Too many requests. Wait a minute and try again.' });
 
-  const text = await request.text();
-  if (text.length > MAX_BODY_BYTES) throw new RequestError(413, 'Request is too large.');
-
-  let body: unknown;
-  try {
-    body = JSON.parse(text);
-  } catch {
-    throw new RequestError(400, 'Request body must be JSON.');
-  }
-
+  const body = await readJson(request);
   const { entry, profile } = parseRequest(body);
+  const appUserId = (body as { appUserId?: unknown }).appUserId;
   const prompt = buildPrompt(entry, profile);
 
   const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
@@ -193,23 +231,35 @@ async function writeStatements(request: Request, env: Env): Promise<Response> {
     return json(502, { error: 'The AI returned an unexpected response. Try again.' });
   }
 
+  // A friend who joined with a referral code has now written a statement,
+  // which is what earns the referrer their month. Runs after the response.
+  if (isValidAppUserId(appUserId)) {
+    ctx.waitUntil(creditReferrerOnWrite(env, appUserId));
+  }
+
   return json(200, { statements });
 }
 
+const ROUTES = ['/v1/write', '/v1/referral/status', '/v1/referral/redeem'];
+
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const { pathname } = new URL(request.url);
-    if (pathname !== '/v1/write') return json(404, { error: 'Not found.' });
+    if (!ROUTES.includes(pathname)) return json(404, { error: 'Not found.' });
     if (request.method !== 'POST') return json(405, { error: 'Method not allowed.' });
-    if (!env.ANTHROPIC_API_KEY) {
-      console.error('ANTHROPIC_API_KEY secret is not set');
-      return json(500, { error: 'The writing service is not configured.' });
-    }
 
     try {
-      return await writeStatements(request, env);
+      if (pathname === '/v1/referral/status') return await handleReferral(request, env, 'status');
+      if (pathname === '/v1/referral/redeem') return await handleReferral(request, env, 'redeem');
+
+      if (!env.ANTHROPIC_API_KEY) {
+        console.error('ANTHROPIC_API_KEY secret is not set');
+        return json(500, { error: 'The writing service is not configured.' });
+      }
+      return await writeStatements(request, env, ctx);
     } catch (err) {
       if (err instanceof RequestError) return json(err.status, { error: err.message });
+      if (err instanceof ReferralError) return json(err.status, { error: err.message });
       if (err instanceof Anthropic.RateLimitError) {
         return json(429, { error: 'The writing service is busy. Try again in a moment.' });
       }

@@ -11,7 +11,7 @@ An iOS/Android app (React Native + Expo) that helps enlisted Air Force members p
 - RevenueCat for IAP (monthly $3.99 / annual $14.99 / lifetime $24.99)
 - EAS Build + EAS Submit
 - TypeScript throughout
-- No backend beyond the stateless AI proxy — all user data stays local for MVP
+- No backend beyond the Worker in `proxy/` — it is the AI proxy plus a small referral ledger (Cloudflare D1). Profile, log entries, and EPB content stay on the device.
 
 ## Developer Preferences
 - **PowerShell-compatible commands** — never use bash-only syntax
@@ -42,11 +42,17 @@ hooks/
   useLogEntries.ts
   useEPBBlocks.ts
   useProfile.ts
-  usePolish.ts      — Claude API call + RevenueCat gate
+  usePolish.ts      — Claude API call + free-write gate
+  useProSync.ts     — keeps profile.isPro in step with RevenueCat
 services/
   anthropic.ts      — API wrapper
-  revenueCat.ts     — IAP wrapper
+  revenueCat.ts     — IAP wrapper (entitlement `pro`; also the install's anonymous ID)
+  referrals.ts      — referral client (code, status, redeem)
   storage.ts        — AsyncStorage abstraction
+proxy/
+  src/index.ts      — Worker routes: /v1/write, /v1/referral/status, /v1/referral/redeem
+  src/referrals.ts  — referral ledger + RevenueCat promotional grants
+  migrations/       — D1 schema
 types/
   index.ts          — all shared types/enums
 ```
@@ -81,8 +87,17 @@ type Component = 'RegAF' | 'AFR' | 'ANG';
 ## Monetization Gate
 - 5 free AI polishes total (tracked in AsyncStorage)
 - On 6th attempt → RevenueCat paywall
+- The first regenerate on each entry is free; later ones count as a write
 - Pro unlocks: unlimited polishes, AFSC-specific context injection (reminders are free for everyone)
 - Check `usePolish.ts` before every API call
+- RevenueCat is the source of truth for Pro. `profile.isPro` is a local mirror kept current by `useProSync`.
+
+## Referrals
+- Every install gets a 6-character code (profile tab). A friend enters it in onboarding or on the profile tab.
+- The friend gets 1 month of Pro on redeeming. The referrer gets 1 month when that friend first writes a statement, for up to 6 friends.
+- Rewards are RevenueCat promotional entitlements granted by the Worker. A month is 30 days and stacks onto any reward time already running.
+- Paid subscribers: earned months are banked in the ledger and granted when the app checks in after the subscription lapses. Lifetime buyers earn nothing; for them the card is "give a friend a free month".
+- Identity is RevenueCat's anonymous app user ID. There are no accounts.
 
 ## ALQ → MPA Mapping
 ```
@@ -108,14 +123,15 @@ improving_the_unit: ['decision_making', 'innovation']
 ```
 EXPO_PUBLIC_PROXY_URL=      # App .env — URL of the deployed Worker (not a secret)
 ANTHROPIC_API_KEY=          # Worker secret only (`npx wrangler secret put`), never in the app's .env
-REVENUECAT_IOS_KEY=         # RevenueCat iOS public key
-REVENUECAT_ANDROID_KEY=     # RevenueCat Android public key
+EXPO_PUBLIC_REVENUECAT_IOS_KEY=      # App .env + eas.json — RevenueCat iOS public SDK key
+EXPO_PUBLIC_REVENUECAT_ANDROID_KEY=  # App .env + eas.json — RevenueCat Android public SDK key
+REVENUECAT_SECRET_KEY=      # Worker secret only — RevenueCat secret API key (v1), grants referral months
 ```
 
 ## Do Not
 - Eject from Expo managed workflow
-- Add any backend/server beyond the AI proxy for MVP
-- Put an Anthropic key in the app or in any `EXPO_PUBLIC_` variable
+- Add any backend/server beyond the Worker in `proxy/` for MVP, or send log entries or profile data anywhere to be stored
+- Put an Anthropic key or the RevenueCat secret key in the app or in any `EXPO_PUBLIC_` variable
 - Use bash-only commands (use PowerShell-compatible)
 - Write partial files — always write complete, working files
 - Use `expo install` alternatives — always use `npx expo install` for Expo packages

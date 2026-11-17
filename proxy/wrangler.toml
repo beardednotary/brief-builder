@@ -2,6 +2,10 @@ name = "briefbuilder-proxy"
 main = "src/index.ts"
 compatibility_date = "2026-11-01"
 
+[vars]
+# Must match the entitlement identifier in the RevenueCat dashboard.
+REVENUECAT_ENTITLEMENT_ID = "pro"
+
 # Per-IP throttle: 10 statement requests per minute.
 [[ratelimits]]
 name = "WRITE_LIMITER"
@@ -11,5 +15,22 @@ namespace_id = "1001"
   limit = 10
   period = 60
 
-# The Anthropic key is NOT stored here. Set it with:
+# Per-IP throttle: 10 referral requests (status checks, code redemptions) per minute.
+[[ratelimits]]
+name = "REFERRAL_LIMITER"
+namespace_id = "1002"
+
+  [ratelimits.simple]
+  limit = 10
+  period = 60
+
+# Referral ledger. Schema lives in migrations/; apply new ones with:
+#   npx wrangler d1 migrations apply briefbuilder --remote
+[[d1_databases]]
+binding = "DB"
+database_name = "briefbuilder"
+database_id = "f257274a-6961-4f5d-ae96-124f6ce2e9e3"
+
+# Secrets are NOT stored here. Set them with:
 #   npx wrangler secret put ANTHROPIC_API_KEY
+#   npx wrangler secret put REVENUECAT_SECRET_KEY   (RevenueCat secret API key, v1)

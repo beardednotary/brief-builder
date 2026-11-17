@@ -1,9 +1,19 @@
-import { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { AirmanRank, Component } from '../../types';
 import { useProfile } from '../../hooks/useProfile';
+import { checkProStatus } from '../../services/revenueCat';
+import { redeemReferralCode } from '../../services/referrals';
 import * as storage from '../../services/storage';
 import { Colors, Spacing, FontSize, Radius } from '../../constants/theme';
 
@@ -59,10 +69,52 @@ export default function SCODScreen() {
   const [overriding, setOverriding] = useState(false);
   const [overrideText, setOverrideText] = useState('');
 
-  const handleFinish = async () => {
+  // This screen is also the last step of Edit Profile. The referral code
+  // field only belongs in first-time setup.
+  const [firstRun, setFirstRun] = useState(false);
+  useEffect(() => {
+    storage.isOnboardingComplete().then((done) => setFirstRun(!done));
+  }, []);
+
+  const [hasCode, setHasCode] = useState(false);
+  const [referralCode, setReferralCode] = useState('');
+  const [finishing, setFinishing] = useState(false);
+
+  const finish = async () => {
     await saveProfile({ reportingPeriodEnd: scod });
     await storage.setOnboardingComplete();
     router.replace('/(tabs)');
+  };
+
+  const handleFinish = async () => {
+    if (finishing) return;
+    const code = referralCode.trim();
+    if (!code) {
+      await finish();
+      return;
+    }
+
+    setFinishing(true);
+    try {
+      const status = await redeemReferralCode(code);
+      // The free month arrives through RevenueCat, so ask it for fresh status.
+      const isPro = await checkProStatus(true);
+      if (isPro !== null) await saveProfile({ isPro });
+      Alert.alert(
+        'Code accepted',
+        status.justGranted > 0
+          ? 'You have a free month of Pro: unlimited AI writing, starting now.'
+          : 'Your free month has been saved to this device.',
+        [{ text: 'Start Building', onPress: finish }],
+        { cancelable: false }
+      );
+    } catch (err) {
+      setFinishing(false);
+      Alert.alert('Code not accepted', err instanceof Error ? err.message : 'Try again.', [
+        { text: 'Fix it', style: 'cancel' },
+        { text: 'Skip for now', onPress: finish },
+      ]);
+    }
   };
 
   const applyOverride = () => {
@@ -125,15 +177,48 @@ export default function SCODScreen() {
             </View>
           </View>
         )}
+
+        {/* Referral code: only on first-time setup, not when editing the profile */}
+        {firstRun && (
+          <View style={styles.referral}>
+            {!hasCode ? (
+              <TouchableOpacity onPress={() => setHasCode(true)}>
+                <Text style={styles.overrideLink}>Have a referral code from a friend?</Text>
+              </TouchableOpacity>
+            ) : (
+              <>
+                <Text style={styles.overrideHint}>
+                  Enter your friend's code for a free month of Pro
+                </Text>
+                <TextInput
+                  style={styles.referralInput}
+                  value={referralCode}
+                  onChangeText={setReferralCode}
+                  placeholder="e.g. K7M2QX"
+                  placeholderTextColor={Colors.textLight}
+                  autoCapitalize="characters"
+                  autoCorrect={false}
+                  maxLength={10}
+                  editable={!finishing}
+                />
+              </>
+            )}
+          </View>
+        )}
       </View>
 
       <View style={styles.footer}>
         <TouchableOpacity
           style={styles.button}
           onPress={handleFinish}
+          disabled={finishing}
           activeOpacity={0.85}
         >
-          <Text style={styles.buttonText}>Start Building →</Text>
+          {finishing ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>Start Building →</Text>
+          )}
         </TouchableOpacity>
         <Text style={styles.note}>You can change this later with Edit Profile</Text>
       </View>
@@ -208,6 +293,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   applyText: { color: '#fff', fontWeight: '700', fontSize: FontSize.sm },
+  referral: { marginTop: Spacing.lg },
+  referralInput: {
+    backgroundColor: Colors.surface,
+    borderWidth: 1.5,
+    borderColor: Colors.border,
+    borderRadius: Radius.sm,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    fontSize: FontSize.md,
+    color: Colors.text,
+    letterSpacing: 2,
+  },
   footer: {
     padding: Spacing.lg,
     paddingBottom: Spacing.md,

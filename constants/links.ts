@@ -51,5 +51,10 @@ export const DAHVIO_APPS: ExternalLink[] = [
   },
 ];
 
-export const SUPPORT_URL = 'https://dahvio.com/epb-builder-support';
+// Where a shared referral message sends people to get the app.
+export const APP_SHARE_URL = 'https://dahvio.com/epb-builder';
+export const SUPPORT_URL ='https://dahvio.com/epb-builder-support';
 export const PRIVACY_URL = 'https://dahvio.com/epb-builder-privacy';
+// Apple's standard licence agreement. App Review requires a Terms of Use link
+// wherever an auto-renewing subscription is sold.
+export const TERMS_URL = 'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';

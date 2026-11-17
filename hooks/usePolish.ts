@@ -12,6 +12,22 @@ export class PaywallError extends Error {
   }
 }
 
+/**
+ * How many times AI has written statements for this entry. Entries saved
+ * before writeCount existed count as one write if they already have drafts.
+ */
+export function getWriteCount(entry: LogEntry): number {
+  return entry.writeCount ?? (entry.draftStatements?.length ? 1 : 0);
+}
+
+/**
+ * The first regenerate on each entry does not use a free write, so one
+ * disappointing result never costs a free user two of their five.
+ */
+export function isFreeRegenerate(entry: LogEntry): boolean {
+  return getWriteCount(entry) === 1;
+}
+
 export function usePolish(profile: UserProfile | null) {
   const getRemainingFreePolishes = useCallback(async (): Promise<number> => {
     const count = await storage.getPolishCount();
@@ -22,7 +38,9 @@ export function usePolish(profile: UserProfile | null) {
     async (entry: LogEntry): Promise<string[]> => {
       if (!profile) throw new Error('Profile required before writing statements.');
 
-      if (!profile.isPro) {
+      const free = isFreeRegenerate(entry);
+
+      if (!profile.isPro && !free) {
         const count = await storage.getPolishCount();
         if (count >= FREE_POLISH_LIMIT) throw new PaywallError();
       }
@@ -30,7 +48,7 @@ export function usePolish(profile: UserProfile | null) {
       // The proxy builds the prompt (constants/prompts.ts) and calls Claude.
       const result = await polishEntry(entry, profile);
 
-      await storage.incrementPolishCount();
+      if (!free) await storage.incrementPolishCount();
       return result.statements;
     },
     [profile]

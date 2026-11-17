@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -20,7 +21,7 @@ import { MPA, ALQ, ProficiencyLevel } from '../../types';
 
 export default function NewLogEntry() {
   const router = useRouter();
-  const { addEntry } = useLogEntries();
+  const { entries, loading: entriesLoading, addEntry } = useLogEntries();
   const { profile } = useProfile();
   const { mpa: mpaParam, autoWrite } = useLocalSearchParams<{ mpa?: string; autoWrite?: string }>();
 
@@ -39,6 +40,7 @@ export default function NewLogEntry() {
 
   const handleSave = async () => {
     if (!isValid) return;
+    const isFirstEntry = !entriesLoading && entries.length === 0;
     const entry = await addEntry({
       inputMode: mode,
       rawText: mode === 'freeform' ? rawText.trim() : undefined,
@@ -53,12 +55,27 @@ export default function NewLogEntry() {
       status: 'draft',
     });
 
-    if (autoWrite === 'true') {
-      router.replace(`/polish/${entry.id}`);
-    } else {
+    const finish = () => {
       router.back();
       // A saved entry is the moment reminders make sense. Offered only once.
       offerRemindersOnce({ lastEntryAt: entry.createdAt, scod: profile?.reportingPeriodEnd });
+    };
+
+    if (autoWrite === 'true') {
+      router.replace(`/polish/${entry.id}`);
+    } else if (isFirstEntry) {
+      // First entry ever: show what the app does with it while they are here.
+      Alert.alert(
+        'Entry saved',
+        'Want to see it as an EPB statement? AI will write two options from what you just logged.',
+        [
+          { text: 'Not now', style: 'cancel', onPress: finish },
+          { text: 'Write it now', onPress: () => router.replace(`/polish/${entry.id}`) },
+        ],
+        { cancelable: false }
+      );
+    } else {
+      finish();
     }
   };
 
