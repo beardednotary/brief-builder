@@ -169,8 +169,9 @@ government information, both of which the description already has.
 
 Six, in this order. Apple's required iPhone size (checked 2026-11-17) is the
 "iPhone with Dynamic Island, medium display" slot: 1206 x 2622 or 1179 x 2556.
-The large display (1320 x 2868) is optional. An iPad set (13-inch,
-2064 x 2752) is required too while `supportsTablet` is true in `app.json`.
+The large display (1320 x 2868) is optional. The app supports iPad
+(decided 2026-11-17), so a 13-inch iPad set (2064 x 2752), captured on an
+iPad, is required too.
 
 Capture steps, demo data and the renderer are in
 [screenshots/README.md](screenshots/README.md).

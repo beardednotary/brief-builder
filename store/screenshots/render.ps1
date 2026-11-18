@@ -10,11 +10,14 @@
 param(
   # Comma-separated, e.g. "1,3". A string because -File mode would read
   # an unquoted 1,3 as the number 13.
-  [string]$Slides = '1,2,3,4,5,6'
+  [string]$Slides = '1,2,3,4,5,6',
+  # "iphone", "ipad", or "iphone,ipad".
+  [string]$Devices = 'iphone,ipad'
 )
 
 $ErrorActionPreference = 'Stop'
 $slideNumbers = $Slides -split ',' | ForEach-Object { [int]$_.Trim() }
+$deviceNames = $Devices -split ',' | ForEach-Object { $_.Trim().ToLower() }
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 $browser = @(
@@ -26,12 +29,14 @@ if (-not $browser) { throw 'Microsoft Edge or Google Chrome is required.' }
 
 Add-Type -AssemblyName System.Drawing
 
-# Required: iPhone with Dynamic Island, medium display (1206 x 2622).
-# Optional: large display (1320 x 2868), sharper on Pro Max phones.
+# Required: iPhone with Dynamic Island, medium display (1206 x 2622), and,
+# because the app supports iPad, the 13-inch iPad display (2064 x 2752).
+# Optional: iPhone large display (1320 x 2868), sharper on Pro Max phones.
 $sizes = @(
-  @{ Name = 'iphone-medium-1206x2622'; W = 1206; H = 2622 },
-  @{ Name = 'iphone-large-1320x2868'; W = 1320; H = 2868 }
-)
+  @{ Name = 'iphone-medium-1206x2622'; W = 1206; H = 2622; Device = 'iphone' },
+  @{ Name = 'iphone-large-1320x2868'; W = 1320; H = 2868; Device = 'iphone' },
+  @{ Name = 'ipad-13-2064x2752'; W = 2064; H = 2752; Device = 'ipad' }
+) | Where-Object { $deviceNames -contains $_.Device }
 
 $frameUrl = 'file:///' + ((Join-Path $here 'frame.html') -replace '\\', '/')
 $browserProfile = Join-Path $env:TEMP 'briefbuilder-screenshots-browser'
@@ -54,7 +59,7 @@ foreach ($size in $sizes) {
       '--virtual-time-budget=5000',
       "--window-size=$($size.W),$($size.H)",
       "--screenshot=$tmp",
-      "${frameUrl}?n=$n"
+      "${frameUrl}?n=$n&d=$($size.Device)"
     )
     $proc = Start-Process -FilePath $browser -ArgumentList $browserArgs -Wait -PassThru -WindowStyle Hidden
     if (-not (Test-Path $tmp)) { throw "The browser did not write slide $n ($($size.Name)); exit code $($proc.ExitCode)." }

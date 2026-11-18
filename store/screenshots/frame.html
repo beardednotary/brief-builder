@@ -70,6 +70,16 @@
     width: auto;
     border-radius: 7.6vw;
   }
+  /* iPad: a wider canvas, so smaller type and a squarer frame. */
+  body.ipad .text { padding: 7vw 9vw 0; }
+  body.ipad .kicker { font-size: 2.3vw; letter-spacing: 0.4vw; margin-bottom: 2vw; }
+  body.ipad h1 { font-size: 6vw; }
+  body.ipad .sub { font-size: 2.9vw; max-width: 64vw; margin-top: 2.2vw; }
+  body.ipad .shot { padding: 5vw 0 6vw; }
+  body.ipad .device { padding: 1.1vw; border-radius: 3.8vw; }
+  body.ipad .device img, body.ipad .placeholder { border-radius: 2.8vw; }
+  body.ipad .placeholder { aspect-ratio: 2064 / 2752; font-size: 2.6vw; }
+
   .placeholder {
     aspect-ratio: 1206 / 2622;
     background: repeating-linear-gradient(45deg, #1b2a52 0 2vw, #16244a 2vw 4vw);
@@ -129,8 +139,13 @@
     },
   };
 
-  const n = new URLSearchParams(location.search).get('n') || '1';
+  const params = new URLSearchParams(location.search);
+  const n = params.get('n') || '1';
   const slide = SLIDES[n] || SLIDES[1];
+  // ?d=ipad uses the iPad layout and the iPad captures in raw-ipad/.
+  const ipad = params.get('d') === 'ipad';
+  const rawDir = ipad ? 'raw-ipad' : 'raw';
+  if (ipad) document.body.classList.add('ipad');
 
   const escape = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   document.getElementById('kicker').textContent = slide.kicker;
@@ -144,10 +159,10 @@
   img.onerror = () => {
     const missing = document.createElement('div');
     missing.className = 'placeholder';
-    missing.textContent = 'Add raw/' + n + '.png';
+    missing.textContent = 'Add ' + rawDir + '/' + n + '.png';
     device.appendChild(missing);
   };
-  img.src = 'raw/' + n + '.png';
+  img.src = rawDir + '/' + n + '.png';
 </script>
 </body>
 </html>

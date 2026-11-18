@@ -53,13 +53,29 @@ Output lands in `out/` (git-ignored):
 
 - `out/iphone-medium-1206x2622/`: **required**, the "iPhone with Dynamic
   Island, medium display" slot in App Store Connect
+- `out/ipad-13-2064x2752/`: **required** while the app supports iPad, the
+  13-inch iPad slot
 - `out/iphone-large-1320x2868/`: optional, the large display slot
 
-To redo some slides only: `render.ps1 -Slides "1,5"`. To change a headline,
-edit `SLIDES` in `frame.html`; open `frame.html?n=1` in a browser to preview.
+To redo some slides or devices only: `render.ps1 -Slides "1,5" -Devices "ipad"`.
+To change a headline, edit `SLIDES` in `frame.html`; open `frame.html?n=1`
+(or `?n=1&d=ipad`) in a browser to preview.
 
 ## iPad
 
-`app.json` has `"supportsTablet": true`, which makes a 13-inch iPad set
-(2064 x 2752) required too. If BriefBuilder should be iPhone-only, set it to
-`false` before the release build and no iPad screenshots are needed.
+BriefBuilder supports iPad (`"supportsTablet": true` in `app.json`), so the
+13-inch set is required. Apple wants iPad screenshots taken on an iPad, not
+phone captures in an iPad frame.
+
+1. Register the iPad for development builds: `eas device:create`, then open
+   the link it prints on the iPad.
+2. Rebuild the development client so it includes the iPad:
+   `eas build --profile development --platform ios`, and install it.
+3. On the iPad, run against `npx expo start`, load the demo data (step 1
+   above; the iPad has its own data), and capture the same six screens in
+   **portrait**, in the same order, into `raw-ipad/1.png` to `raw-ipad/6.png`.
+
+On iPad the app rotates and can run in resized windows: Expo declares all
+four orientations for iPad, as Apple now requires, so only the iPhone stays
+locked to portrait. While capturing, turn the iPad to landscape on each
+screen once to check nothing breaks; App Review tests iPad.
