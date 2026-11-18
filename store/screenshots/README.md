@@ -64,13 +64,41 @@ To change a headline, edit `SLIDES` in `frame.html`; open `frame.html?n=1`
 ## iPad
 
 BriefBuilder supports iPad (`"supportsTablet": true` in `app.json`), so the
-13-inch set is required. Apple wants iPad screenshots taken on an iPad, not
-phone captures in an iPad frame.
+13-inch set is required. Apple wants iPad screenshots of the app running on
+an iPad, not phone captures in an iPad frame. The iPad simulator counts.
+
+### On a Mac, with the simulator (easiest)
+
+No provisioning needed, and the simulator saves screenshots at exactly
+2064 x 2752.
+
+1. Pull the `revenuecat-referrals` branch and run `npm install`.
+2. Build and install the simulator client:
+   `eas build --profile development-simulator --platform ios`, then
+   `eas build:run --platform ios --profile development-simulator --latest`
+   and pick a 13-inch iPad Pro simulator.
+3. Run `npx expo start` and open the project in the simulator.
+4. Finish onboarding, close the paywall, then load the demo data from the
+   Profile tab (step 1 above).
+5. Capture the same six screens in **portrait**, in the same order, with
+   ⌘S (each lands on the Desktop as a PNG). The simulator is not Pro, so the
+   dashboard shows a small free-writes card and the referral card shows the
+   "Give a month, get a month" version; both are fine.
+6. Copy them to this Windows machine as `raw-ipad/1.png` to `raw-ipad/6.png`
+   and render with `render.ps1 -Devices "ipad"` (the renderer needs Windows:
+   it uses Edge and System.Drawing).
+
+### On a physical iPad
 
 1. Register the iPad for development builds: `eas device:create`, then open
    the link it prints on the iPad.
 2. Rebuild the development client so it includes the iPad:
-   `eas build --profile development --platform ios`, and install it.
+   `eas build --profile development --platform ios`, run in your own
+   terminal. When EAS offers to choose the devices for the provisioning
+   profile, say yes and tick the iPad; a build that reuses the old profile
+   fails on the iPad with "integrity could not be verified". Then install it.
+   On iPadOS 16 and later, turn on Settings → Privacy & Security →
+   Developer Mode before opening it.
 3. On the iPad, run against `npx expo start`, load the demo data (step 1
    above; the iPad has its own data), and capture the same six screens in
    **portrait**, in the same order, into `raw-ipad/1.png` to `raw-ipad/6.png`.
