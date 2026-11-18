@@ -8,7 +8,7 @@ App Store, US, en-US, 2026-11-16.
 
 | Field | Value | Length |
 |---|---|---|
-| App name | `BriefBuilder: Air Force EPB` | 27 / 30 |
+| App name | `Air Force EPB Brief Builder` (the name the App Store Connect record was created with; kept because "brief" and "builder" index as separate words, matching "epb builder") | 27 / 30 |
 | Subtitle | `USAF Eval & EPR Bullet Writer` | 29 / 30 |
 | Keywords | `myeval,airman,enlisted,performance,statement,review,brag,sheet,waps,afsc,nco,log,military,evals,alq` | 99 / 100 |
 | Primary category | Productivity | |
@@ -178,6 +178,21 @@ An iPad set is required too while `supportsTablet` is true in `app.json`.
 | 4 | Dashboard with progress and the close-out countdown | Know where your EPB stands |
 | 5 | Statement saved, block progress, "Write the next one" | Action and impact, in plain language |
 | 6 | Profile tab referral card | Give a friend a free month |
+
+## Entered in App Store Connect (2026-11-17)
+
+App record "Air Force EPB Brief Builder", Apple ID 6835032478, version 1.0.
+
+- [x] App Information: subtitle, categories (Productivity / Business), saved
+- [x] Age rating questionnaire: every answer None or No, calculated 4+, saved
+- [ ] Content Rights: left for the owner (a legal declaration)
+- [x] 1.0 page: promotional text, description, keywords, support and marketing URLs, copyright "2026 DahVio Studios", review notes, "Sign-in required" unticked; saved and confirmed after a reload
+- [ ] 1.0 page: App Review contact name, phone and email (owner's personal details)
+- [x] App Privacy: privacy policy URL; Other User Content, User ID and Purchase History, each for App Functionality, not linked, not tracking; saved
+- [ ] App Privacy: Publish (asks the owner to attest the answers are accurate)
+- [x] Pricing: Free, base country United States
+- [ ] Availability: countries not chosen yet
+- [ ] Screenshots, build, and the three in-app purchases attached to the version
 
 ## Before submitting
 
