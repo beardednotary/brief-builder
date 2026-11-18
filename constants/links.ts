@@ -51,6 +51,27 @@ export const DAHVIO_APPS: ExternalLink[] = [
   },
 ];
 
+// The App Store record's Apple ID (App Store Connect → App Information).
+const APP_STORE_ID = '6835032478';
+
+// User-initiated rating and feedback, from the Profile tab. Opening the
+// store's write-review page on a tap is allowed; only automatic prompts must
+// use the system dialog (services/review.ts). Works once the app is live.
+export const FEEDBACK_LINKS: ExternalLink[] = [
+  {
+    label: 'Rate BriefBuilder',
+    detail: ios ? 'Leave a rating on the App Store' : 'Leave a rating on Google Play',
+    url: ios
+      ? `https://apps.apple.com/app/id${APP_STORE_ID}?action=write-review`
+      : 'https://play.google.com/store/apps/details?id=com.dahvio.briefbuilder',
+  },
+  {
+    label: 'Send feedback',
+    detail: 'Something missing or not working? Email the developer',
+    url: 'mailto:ray@dahvio.com?subject=BriefBuilder%20feedback',
+  },
+];
+
 // Where a shared referral message sends people to get the app.
 export const APP_SHARE_URL = 'https://dahvio.com/epb-builder';
 export const SUPPORT_URL ='https://dahvio.com/epb-builder-support';

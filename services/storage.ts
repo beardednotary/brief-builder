@@ -102,13 +102,22 @@ export async function saveReminderSettings(settings: ReminderSettings): Promise<
 // ── Review prompt ─────────────────────────────────────────────────────────────
 
 export interface ReviewState {
-  askCount: number;
-  lastAskedAt?: string; // ISO date
+  /** When the review prompt was requested (ISO), oldest first. */
+  askedAt: string[];
+  /** Review moments already used, as "moment:closeOutDate". */
+  moments: string[];
 }
 
 export async function getReviewState(): Promise<ReviewState> {
   const raw = await AsyncStorage.getItem(KEYS.REVIEW_STATE);
-  return raw ? (JSON.parse(raw) as ReviewState) : { askCount: 0 };
+  if (!raw) return { askedAt: [], moments: [] };
+  const parsed = JSON.parse(raw) as Partial<ReviewState> & { lastAskedAt?: string };
+  // Earlier builds stored { askCount, lastAskedAt }; keep the last ask so
+  // the spacing between asks still holds after an update.
+  return {
+    askedAt: parsed.askedAt ?? (parsed.lastAskedAt ? [parsed.lastAskedAt] : []),
+    moments: parsed.moments ?? [],
+  };
 }
 
 export async function saveReviewState(state: ReviewState): Promise<void> {

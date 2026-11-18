@@ -20,7 +20,7 @@ import {
   isFreeRegenerate,
 } from '../../hooks/usePolish';
 import { useProfile } from '../../hooks/useProfile';
-import { maybeRequestReview } from '../../services/review';
+import { maybeRequestReview, momentForSavedStatement } from '../../services/review';
 import * as storage from '../../services/storage';
 import {
   MPA_DEFINITIONS,
@@ -128,11 +128,18 @@ function StatementWriter({ id }: { id: string }) {
     setSelected(statement);
     setSaved(true);
 
-    // A statement just landed in the builder: a good moment to ask for a
-    // review, once the success state has had a second to register.
-    const finalized =
-      entries.filter((e) => e.status === 'finalized' && e.id !== id).length + 1;
-    setTimeout(() => maybeRequestReview(finalized), 1500);
+    // Ask for a review only when this statement finished a block or the whole
+    // EPB, once the success state has had a moment to register. Not when it
+    // used the last free write: the upsell card is on screen then.
+    const moment = momentForSavedStatement(
+      getBlock(entry.mpa).statements.length,
+      MPA_TARGET_STATEMENTS,
+      MPA_ORDER.every((m) => getBlock(m).statements.length >= MPA_TARGET_STATEMENTS)
+    );
+    const upsellShowing = !profile?.isPro && remaining === 0;
+    if (moment && !upsellShowing) {
+      setTimeout(() => maybeRequestReview(moment, profile?.reportingPeriodEnd), 1500);
+    }
   };
 
   if (!entry) {

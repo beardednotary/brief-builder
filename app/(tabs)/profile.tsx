@@ -29,6 +29,7 @@ import ReferralCard from '../../components/referral/ReferralCard';
 import {
   DAHVIO_APPS,
   ExternalLink,
+  FEEDBACK_LINKS,
   OFFICIAL_REFERENCES,
   PRIVACY_URL,
   SUPPORT_URL,
@@ -241,6 +242,14 @@ export default function ProfileScreen() {
               })}
             </View>
           )}
+        </View>
+
+        {/* Rating and feedback, on the user's own tap */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Help Build BriefBuilder</Text>
+          {FEEDBACK_LINKS.map((link, i) => (
+            <LinkRow key={link.label} link={link} last={i === FEEDBACK_LINKS.length - 1} />
+          ))}
         </View>
 
         {/* Official references */}

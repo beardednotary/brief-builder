@@ -11,8 +11,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { useEPBBlocks } from '../../hooks/useEPBBlocks';
+import { useProfile } from '../../hooks/useProfile';
 import { maybeRequestReview } from '../../services/review';
-import { MPA_DEFINITIONS, MPA_ORDER, MPA_CHAR_LIMIT } from '../../constants/mpa';
+import {
+  MPA_DEFINITIONS,
+  MPA_ORDER,
+  MPA_CHAR_LIMIT,
+  MPA_TARGET_STATEMENTS,
+} from '../../constants/mpa';
 import { Colors, Spacing, FontSize, Radius, Shadow } from '../../constants/theme';
 import { MPA } from '../../types';
 
@@ -41,6 +47,7 @@ function MPABlock({
 }) {
   const router = useRouter();
   const { getBlock, removeStatement } = useEPBBlocks();
+  const { profile } = useProfile();
   const block = getBlock(mpa);
   const def = MPA_DEFINITIONS[mpa];
   const accent = MPA_ACCENT[mpa];
@@ -50,10 +57,16 @@ function MPABlock({
   const copyBlock = async () => {
     if (block.statements.length === 0) return;
     await Clipboard.setStringAsync(block.statements.join(' '));
-    // Copying a finished block is the payoff, so ask for a review after it.
-    const totalStatements = MPA_ORDER.reduce((n, m) => n + getBlock(m).statements.length, 0);
-    Alert.alert('Copied', `${def.label} block copied to clipboard.`, [
-      { text: 'OK', onPress: () => maybeRequestReview(totalStatements) },
+    // Copying a finished block on its way into myEval is the payoff, so that
+    // is a moment to ask for a review. A half-built block is not.
+    const finished = block.statements.length >= MPA_TARGET_STATEMENTS;
+    Alert.alert('Copied', `${def.label} block copied. Paste it into myEval.`, [
+      {
+        text: 'OK',
+        onPress: () => {
+          if (finished) maybeRequestReview('block_copied', profile?.reportingPeriodEnd);
+        },
+      },
     ]);
   };
 

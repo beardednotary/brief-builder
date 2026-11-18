@@ -20,6 +20,7 @@ import {
   ReferralStatus,
 } from '../../services/referrals';
 import * as storage from '../../services/storage';
+import { maybeRequestReview } from '../../services/review';
 import { Colors, Spacing, FontSize, Radius, Shadow } from '../../constants/theme';
 
 function plural(n: number, word: string): string {
@@ -47,7 +48,7 @@ function pitch(plan: ProPlan, max: number): { title: string; body: string } {
 
 /** Profile-tab card: share your code, track progress, and use a friend's code. */
 export default function ReferralCard() {
-  const { saveProfile } = useProfile();
+  const { profile, saveProfile } = useProfile();
   const [status, setStatus] = useState<ReferralStatus | null>(null);
   const [plan, setPlan] = useState<ProPlan>('free');
   const [loading, setLoading] = useState(true);
@@ -87,10 +88,15 @@ export default function ReferralCard() {
   const handleShare = async () => {
     if (!status) return;
     try {
-      await Share.share({ message: buildShareMessage(status.code) });
+      const result = await Share.share({ message: buildShareMessage(status.code) });
       await storage.setReferralJoined();
+      // Someone who just recommended the app is a good person to ask for a
+      // review. iOS reports a dismissed share sheet; only ask if it went out.
+      if (result.action === Share.sharedAction) {
+        setTimeout(() => maybeRequestReview('referral_shared', profile?.reportingPeriodEnd), 1000);
+      }
     } catch {
-      // Share sheet dismissed or unavailable. Nothing to do.
+      // Share sheet unavailable. Nothing to do.
     }
   };
 
