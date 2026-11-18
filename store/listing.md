@@ -167,8 +167,13 @@ government information, both of which the description already has.
 
 ## Screenshots
 
-Six, in this order. 6.9" iPhone (1320 x 2868) is the only required iPhone size.
-An iPad set is required too while `supportsTablet` is true in `app.json`.
+Six, in this order. Apple's required iPhone size (checked 2026-11-17) is the
+"iPhone with Dynamic Island, medium display" slot: 1206 x 2622 or 1179 x 2556.
+The large display (1320 x 2868) is optional. An iPad set (13-inch,
+2064 x 2752) is required too while `supportsTablet` is true in `app.json`.
+
+Capture steps, demo data and the renderer are in
+[screenshots/README.md](screenshots/README.md).
 
 | # | Screen | Caption |
 |---|---|---|
@@ -176,7 +181,7 @@ An iPad set is required too while `supportsTablet` is true in `app.json`.
 | 2 | New log entry form | Log it in 30 seconds |
 | 3 | EPB Builder with the four blocks and 350 counters | All four blocks, 350 characters each |
 | 4 | Dashboard with progress and the close-out countdown | Know where your EPB stands |
-| 5 | Statement saved, block progress, "Write the next one" | Action and impact, in plain language |
+| 5 | Statement saved, block progress, "Write the next one" | Action and impact, no fluff |
 | 6 | Profile tab referral card | Give a friend a free month |
 
 ## Entered in App Store Connect (2026-11-17)

@@ -53,6 +53,10 @@ export async function getPolishCount(): Promise<number> {
   return raw ? parseInt(raw, 10) : 0;
 }
 
+export async function resetPolishCount(): Promise<void> {
+  await AsyncStorage.removeItem(KEYS.POLISH_COUNT);
+}
+
 export async function incrementPolishCount(): Promise<number> {
   const count = await getPolishCount();
   const next = count + 1;

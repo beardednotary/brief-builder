@@ -26,6 +26,7 @@ import {
 } from '../../services/notifications';
 import { FREE_POLISH_LIMIT } from '../../hooks/usePolish';
 import ReferralCard from '../../components/referral/ReferralCard';
+import { loadDemoData } from '../../services/demoData';
 import {
   DAHVIO_APPS,
   ExternalLink,
@@ -130,6 +131,18 @@ export default function ProfileScreen() {
             router.replace('/(onboarding)');
           },
         },
+      ]
+    );
+  };
+
+  // Development builds only: fills the app with the screenshot demo set.
+  const confirmDemoData = () => {
+    Alert.alert(
+      'Load screenshot demo data?',
+      'Replaces your profile, log entries and EPB blocks on this device with the App Store demo set, then reloads the app.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Load Demo Data', style: 'destructive', onPress: () => loadDemoData() },
       ]
     );
   };
@@ -295,6 +308,12 @@ export default function ProfileScreen() {
         <TouchableOpacity style={styles.resetBtn} onPress={confirmReset}>
           <Text style={styles.resetText}>Reset App Data</Text>
         </TouchableOpacity>
+
+        {__DEV__ && (
+          <TouchableOpacity style={styles.resetBtn} onPress={confirmDemoData}>
+            <Text style={styles.demoText}>Load Screenshot Demo Data (dev only)</Text>
+          </TouchableOpacity>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -397,4 +416,5 @@ const styles = StyleSheet.create({
     marginTop: Spacing.sm,
   },
   resetText: { color: Colors.error, fontWeight: '600', fontSize: FontSize.sm },
+  demoText: { color: Colors.primaryLight, fontWeight: '600', fontSize: FontSize.sm },
 });
