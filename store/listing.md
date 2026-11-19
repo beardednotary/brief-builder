@@ -99,6 +99,89 @@ back up: editing a statement's text, and ALQ definitions).
 First release. Log accomplishments all year and let AI write your EPB performance statements.
 ```
 
+## Spanish (Mexico) localization
+
+Why: the US App Store indexes Spanish (Mexico) metadata alongside English
+(U.S.), so this localization adds a second name, subtitle and 100-character
+keyword field for US search. Those fields only use words the English listing
+does not already cover. Sources: AppTweak's cross-localization table and
+Sonar's guide (see store/aso-research.md); Apple publishes no list.
+
+The app itself stays in English (so do EPB statements in myEval); the
+description says so.
+
+| Field (es-MX) | Value | Length |
+|---|---|---|
+| App name | `EPB & EPR Writer: Air Force` | 27 / 30 |
+| Subtitle | `AI Accomplishment Tracker` | 25 / 30 |
+| Keywords | `guard,reserve,national,ssgt,tsgt,msgt,smsgt,cmsgt,sra,a1c,achievement,journal,generator,evaluation` | 98 / 100 |
+
+These stay in English on purpose: Airmen search the store in English, and
+the point of this locale is more English search terms. The App Store combines
+words within one localization, so these three fields are built to pair up on
+their own: "epr writer", "epb writer", "air force epb", "air national guard",
+"air force reserve", "ai accomplishment tracker", "epb generator", "air force
+evaluation". Why each word: "es-MX keyword fields" in aso-research.md.
+
+### Promotional text (es-MX)
+
+```
+Deja de reconstruir tu año de memoria. Registra tus logros en 30 segundos y deja que la IA escriba declaraciones de EPB que caben en el bloque de 350 caracteres.
+```
+
+### Description (es-MX)
+
+```
+La mayoría de las EPB se escriben en una semana de estrés, a partir de un año que apenas recuerdas. BriefBuilder lo resuelve.
+
+Registra lo que hiciste en 30 segundos, el mismo día que pasa. Cuando se acerque tu fecha de cierre, BriefBuilder convierte cada registro en una declaración de desempeño como lo pide la AFI 36-2406: primero la acción, luego el impacto, en lenguaje claro y dentro del límite de 350 caracteres de cada bloque.
+
+La app y las declaraciones están en inglés, igual que tu EPB en myEval.
+
+REGÍSTRALO MIENTRAS LO RECUERDAS
+• Registros rápidos: qué hiciste, a quién ayudó y los números
+• Asigna cada registro a un Major Performance Area y a un Airman Leadership Quality
+• Recordatorios para que un mes ocupado no quede sin registrar
+• Cuenta regresiva a tu fecha de cierre (SCOD), según tu rango
+
+DECLARACIONES DE DESEMPEÑO, NO LOS VIEJOS EPR BULLETS
+• La IA escribe dos opciones de declaración por cada registro
+• Acción más impacto, con tus números, dólares, porcentajes y tiempo ahorrado
+• Lenguaje claro, sin clichés como "consummate professional" o "go-to Airman"
+• Conteo de caracteres en vivo en cada declaración y cada bloque
+• ¿No quedó bien? Pide otra versión
+
+ARMA LOS CUATRO BLOQUES
+• Executing the Mission
+• Leading People
+• Managing Resources
+• Improving the Unit
+Ve qué bloques están listos y cuáles todavía necesitan una declaración, luego copia un bloque terminado y pégalo en myEval.
+
+HECHA PARA AIRMEN ENLISTADOS
+• Todos los rangos, de AB a CMSgt
+• Regular Air Force, Air Force Reserve y Air National Guard
+• Los 10 Airman Leadership Qualities, ordenados bajo el bloque que les corresponde
+• Enlaces a la AFI 36-2406, al AF Form 716 y a la lista oficial de acrónimos
+
+TUS NOTAS SE QUEDAN EN TU TELÉFONO
+No hay cuenta ni registro. Tu perfil, tus registros y tus bloques de EPB se guardan en tu dispositivo. Cuando pides una declaración, ese registro se envía a un servicio de IA para escribirla, y BriefBuilder no lo guarda. Nunca ingreses información clasificada o controlada.
+
+GRATIS Y PRO
+Gratis: registros ilimitados, el constructor completo de EPB, recordatorios y 5 declaraciones escritas por IA.
+Pro: escritura con IA ilimitada, con declaraciones adaptadas a tu AFSC. Elige mensual, anual o un pago único de por vida.
+¿Tienes un amigo atrasado con su EPB? Comparte tu código. Tu amigo recibe un mes gratis de Pro, y tú recibes uno cuando escriba su primera declaración.
+
+BriefBuilder es una app independiente. No está afiliada, respaldada ni patrocinada por la U.S. Air Force ni por el Department of Defense. Las reglas de evaluación vienen de la AFI 36-2406, publicada en e-publishing.af.mil. Eres responsable de la exactitud de tu propia evaluación.
+
+Términos de uso: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
+Política de privacidad: https://dahvio.com/epb-builder-privacy
+```
+
+2,841 / 4,000 (Applyra `check_metadata`, 2026-11-18).
+
+Support URL, marketing URL and screenshots: same as English (U.S.).
+
 ## In-app purchases
 
 Product IDs must match `services/revenueCat.ts` exactly.
@@ -197,6 +280,8 @@ App record "Air Force EPB Brief Builder", Apple ID 6835032478, version 1.0.
 - [x] App Privacy: privacy policy URL; Other User Content, User ID and Purchase History, each for App Functionality, not linked, not tracking; saved
 - [ ] App Privacy: Publish (asks the owner to attest the answers are accurate)
 - [x] Pricing: Free, base country United States
+- [x] Spanish (Mexico) localization (2026-11-18): name, subtitle, promotional text, description, keywords, support and marketing URLs, privacy policy URL; each confirmed after a reload. Screenshots fall back to English (U.S.)
+- [x] Content Rights answered (by the owner)
 - [ ] Availability: countries not chosen yet
 - [ ] Screenshots, build, and the three in-app purchases attached to the version
 

@@ -174,6 +174,53 @@ word "briefbuilder" that nobody searches (kept as the brand), "air" and
 "force" out of reach on their own, and "bullet", "writer", "sheet", "review"
 and "log" held by bigger apps.
 
+## es-MX keyword fields (2026-11-18)
+
+The US App Store also indexes the Spanish (Mexico) localization, so it adds
+a second name, subtitle and keyword field for US search
+([AppTweak](https://www.apptweak.com/en/aso-blog/how-to-benefit-from-cross-localization-on-the-app-store?format=md),
+[Sonar](https://trysonar.app/blog/app-localization-keep-home-rankings-intact);
+Apple publishes no list). The chosen fields are in listing.md.
+
+New candidates inspected (App Store, US, en-US):
+
+| Keyword | Difficulty | Traffic | KEI | Top results on-intent? | Used |
+|---|---|---|---|---|---|
+| epr writer | 12 | 41 | 3.42 | mixed: EPR Writer #1, then generic writing apps | yes: name |
+| epb writer | 19 | 8 | 0.42 | mixed: myEval #8 | yes: name |
+| eval writer | 26 | 8 | 0.31 | yes: Navy Eval Writer, myEval, EvalEdge | via English subtitle |
+| epb generator | 19 | 8 | 0.42 | no: AI image generators | yes: keywords |
+| air force evaluation | 22 | 8 | 0.36 | mixed | yes: name + keywords |
+| enlisted performance brief | 16 | 8 | 0.50 | mixed: myEval #4 | via English listing |
+| air national guard | 5 | 8 | 1.6 | mixed: unit and recruiting apps | yes: keywords |
+| air force reserve | 8 | 8 | 1.0 | mixed | yes: keywords |
+| achievement log | 8 | 8 | 1.0 | mixed: Climb career log #1 | yes: keywords |
+| accomplishments | 5 | 8 | 1.6 | mixed: generic trackers | yes: subtitle |
+| tsgt | 15 | 8 | 0.53 | mixed: WAPS Study #1 | yes: keywords |
+| senior airman | 14 | 8 | 0.57 | mixed | as "sra" |
+| ssgt | 16 | 8 | 0.50 | no: matched as "sgt" | yes, cheap |
+| msgt | 23 | 8 | 0.35 | no: Microsoft apps | yes, cheap |
+| performance statement | 15 | 8 | 0.53 | no: corporate HR apps | via English listing |
+| promotion board | 14 | 8 | 0.57 | mixed: Army study apps | no: "promotion" reads as a price promotion |
+| bullet generator | 22 | 8 | 0.36 | no: games | no |
+| space force | 37 | 25 | 0.68 | mixed | no: the app is for Airmen |
+| navy eval writer | 24 | 25 | 1.04 | Navy | no: wrong service |
+| pdg promote | 20 | 75 | 3.75 | promotion test prep | no: a competitor's app name |
+| pdg mastery | 26 | 53 | 2.04 | promotion test prep | no: a competitor's app name |
+| sergeant | 32 | 63 | 1.97 | no: exam and cleaning apps | no |
+| sergeant major | 15 | 25 | 1.67 | no: card games | no |
+| ai writer | 64 | 56 | 0.88 | no: generic AI writers | no: too hard, off-intent |
+| accomplish | 54 | 25 | 0.46 | no: to-do apps | no |
+| goals and accomplishments tracking app | 29 | 25 | 0.86 | no: habit trackers | no |
+
+Autocomplete: "ssgt" and "tsgt" both suggest WAPS PDG AFH1 2027 (WAPS
+Study); "air national" suggests only "virginia air national guard"; "senior
+air" and "air force res" suggest nothing.
+
+The one term with real volume is "epr writer"; most others sit at traffic 8
+and are in because they cost nothing in a field that would otherwise be
+empty.
+
 ## After launch
 
 - Add the live app to Applyra (it needs the App Store ID once the app is
